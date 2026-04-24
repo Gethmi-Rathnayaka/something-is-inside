@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &1351852033661656828
+--- !u!1 &3689359311516248713
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,24 +8,24 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 4428238537122574862}
-  - component: {fileID: 6833508573534873551}
-  - component: {fileID: 5920126145273245310}
-  - component: {fileID: 2819896189941093887}
+  - component: {fileID: 3038566981166812013}
+  - component: {fileID: 2905342119205920290}
+  - component: {fileID: 1558186214224271094}
+  - component: {fileID: 6888081404827548894}
   m_Layer: 0
-  m_Name: WeepingDoll
+  m_Name: Marie
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &4428238537122574862
+--- !u!4 &3038566981166812013
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1351852033661656828}
+  m_GameObject: {fileID: 3689359311516248713}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -34,14 +34,14 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!212 &6833508573534873551
+--- !u!212 &2905342119205920290
 SpriteRenderer:
   serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1351852033661656828}
+  m_GameObject: {fileID: 3689359311516248713}
   m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
@@ -93,36 +93,40 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!114 &5920126145273245310
+--- !u!114 &1558186214224271094
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1351852033661656828}
+  m_GameObject: {fileID: 3689359311516248713}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8533156d6ff9be34fa168273386fe8fe, type: 3}
+  m_Script: {fileID: 11500000, guid: dd06640da4d24e74885374d608b951fd, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: '::'
-  dollName: 
-  spriteRenderer: {fileID: 0}
-  stage1_Normal: {fileID: 0}
-  stage2_Creepy: {fileID: 0}
-  stage3_Distorted: {fileID: 0}
-  mood: 50
-  corruption: 0
-  neglectCounter: 0
---- !u!114 &2819896189941093887
+  m_EditorClassIdentifier: Assembly-CSharp::RibbonDollLogic
+  _state:
+    dollName: 
+    mood: 0
+    cleanliness: 0
+    corruption: 0
+    neglectCounter: 0
+    consecutiveIgnoreCount: 0
+    ribbonRemovedFlag: 0
+    bloodNotCleanedFlag: 0
+    oliverBadEndFlag: 0
+  interactedToday: 0
+  visuals: {fileID: 0}
+--- !u!114 &6888081404827548894
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1351852033661656828}
+  m_GameObject: {fileID: 3689359311516248713}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f8a560da81342ae4690c1802afdb76aa, type: 3}
+  m_Script: {fileID: 11500000, guid: 3771b892cfb083f4ba98a989f1dde227, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::WeepingDollLogic
-  state: {fileID: 5920126145273245310}
+  m_EditorClassIdentifier: Assembly-CSharp::DollVisuals
+  spriteRenderer: {fileID: 2905342119205920290}

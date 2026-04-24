@@ -1,118 +1,115 @@
 using UnityEngine;
 
 /// <summary>
-/// Handles player interactions with dolls.
-/// Called when a player selects a choice (e.g., "Clean Angry Doll", "Comfort Weeping Doll").
+/// Attach to: same GameObject as GameManager or its own object.
+/// Assign in Inspector: dollManager, uiManager.
+///
+/// UIManager's choice buttons call HandleInteraction() with the right parameters.
+/// You no longer need a DayEvent.Choice data class — choices are built per day
+/// in DayEventManager and fed directly as button labels + lambdas.
 /// </summary>
 public class InteractionManager : MonoBehaviour
 {
     public DollManager dollManager;
-    public DayEventManager dayEventManager;
-    public UIManager uiManager;
+    public UIManager   uiManager;
 
-    // References to actual doll GameObjects with DollBase scripts
-    public DollBase angryDoll;
-    public DollBase weepingDoll;
-    public DollBase ribbonDoll;
+    // ── Public entry points (called by UIManager button lambdas) ───────────────
+
+    public void CleanDoll(string dollName)
+    {
+        var doll = dollManager.GetDollByName(dollName);
+        if (doll == null) return;
+
+        string feedback = doll.Clean();
+        FinishInteraction(feedback);
+    }
+
+    public void BrushHair()
+    {
+        // Only Elizabeth has brush hair
+        string feedback = dollManager.elizabeth.BrushHair();
+        FinishInteraction(feedback);
+    }
+
+    public void ComfortOliver()
+    {
+        string feedback = dollManager.oliver.Comfort();
+        FinishInteraction(feedback);
+    }
+
+    public void GiftOliver(string item)
+    {
+        string feedback = dollManager.oliver.GiftItem(item);
+        FinishInteraction(feedback);
+    }
+
+    /// <summary>Player ignores a specific doll.</summary>
+    public void IgnoreDoll(string dollName)
+    {
+        var doll = dollManager.GetDollByName(dollName);
+        if (doll == null) return;
+
+        string feedback = doll.Ignore();
+        FinishInteraction(feedback);
+    }
 
     /// <summary>
-    /// Called when player makes a choice during the day.
+    /// Day 5 special: player tries to remove Marie's ribbon.
     /// </summary>
-    public void HandleChoice(int choiceIndex)
+    public void RemoveMariesRibbon()
     {
-        DayEvent dayEvent = dayEventManager.GetCurrentDayEvent();
-        if (dayEvent == null) return;
-
-        DayEvent.Choice choice = dayEvent.choices[choiceIndex];
-
-        // Determine which doll was affected
-        DollBase affectedDoll = GetDollByName(choice.affectedDoll);
-
-        // Apply the choice's effect
-        ApplyChoiceEffect(choice, affectedDoll);
-
-        // Notify GameManager that an interaction happened
-        GameManager.Instance.UseInteraction(affectedDoll);
-
-        // Show feedback
-        if (uiManager != null)
-            uiManager.ShowMessage(choice.choiceText);
+        string feedback = dollManager.marie.RemoveRibbon();
+        FinishInteraction(feedback);
     }
 
-    private void ApplyChoiceEffect(DayEvent.Choice choice, DollBase affectedDoll)
+    /// <summary>
+    /// Day 5 special: player leaves ribbon alone.
+    /// </summary>
+    public void LeaveMariesRibbon()
     {
-        if (affectedDoll == null) return;
-
-        // Apply mood/corruption changes based on choice
-        if (choice.moodImpact != 0)
-        {
-            affectedDoll.state.ModifyMood(choice.moodImpact);
-        }
-
-        // Apply visual effects based on the choice
-        // These directly affect which sprite shows
-        switch (choice.visualEffect)
-        {
-            case "clean":
-                affectedDoll.state.ModifyMood(10);
-                // Sprite will update to show clean doll
-                break;
-            case "comforted_ribbon":
-            case "comforted_clover":
-            case "comforted":
-                affectedDoll.state.ModifyMood(15);
-                break;
-            case "ignored_crying":
-            case "ignored":
-            case "fear_grow":
-                affectedDoll.state.ModifyMood(-10);
-                break;
-            case "ribbon_removed":
-                // BAD CHOICE - corrupts the doll severely
-                affectedDoll.state.corruption += 50;
-                affectedDoll.state.ModifyMood(-20);
-                break;
-            case "ribbon_cleaned":
-                affectedDoll.state.corruption = Mathf.Max(0, affectedDoll.state.corruption - 10);
-                affectedDoll.state.ModifyMood(5);
-                break;
-            case "brushed":
-                affectedDoll.state.ModifyMood(8);
-                break;
-            case "dress_repaired":
-                affectedDoll.state.ModifyMood(10);
-                break;
-            case "separated":
-                // Separating all dolls has consequences
-                affectedDoll.state.ModifyMood(-15);
-                break;
-            case "played_with":
-                affectedDoll.state.ModifyMood(12);
-                break;
-            case "repositioned":
-                affectedDoll.state.ModifyMood(-5); // Doll doesn't like being moved
-                break;
-            default:
-                // No special effect
-                break;
-        }
-
-        // Update the visual representation
-        affectedDoll.state.UpdateVisuals();
+        string feedback = dollManager.marie.LeaveRibbon();
+        FinishInteraction(feedback);
     }
 
-    private DollBase GetDollByName(string dollName)
+    /// <summary>
+    /// Day 8 special: player cleans blood off Elizabeth.
+    /// bloodSplashed flag must be set first by DayEventManager.
+    /// </summary>
+    public void CleanBloodFromElizabeth()
     {
-        switch (dollName)
-        {
-            case "Angry":
-                return angryDoll;
-            case "Weeping":
-                return weepingDoll;
-            case "Ribbon":
-                return ribbonDoll;
-            default:
-                return null;
-        }
+        dollManager.elizabeth.bloodSplashed = false;
+        string feedback = dollManager.elizabeth.Clean();
+        FinishInteraction(feedback);
+    }
+
+    /// <summary>
+    /// Day 8: player ignores the blood.
+    /// </summary>
+    public void IgnoreBloodOnElizabeth()
+    {
+        // Just pass the day — DollBase.NightProcess will set bloodNotCleanedFlag
+        string feedback = "You look away. It's probably nothing.";
+        FinishInteraction(feedback);
+    }
+
+    // ── "Not today" / skip interaction ─────────────────────────────────────────
+
+    /// <summary>
+    /// Spends an interaction slot without doing anything to a doll.
+    /// </summary>
+    public void NotToday()
+    {
+        FinishInteraction("You leave the dolls alone for now.");
+    }
+
+    // ── Internal ───────────────────────────────────────────────────────────────
+
+    private void FinishInteraction(string feedbackText)
+    {
+        uiManager.ShowMessage(feedbackText);
+        uiManager.UpdateStatsDisplay(dollManager.allDolls);
+        GameManager.Instance.UseInteraction();
+
+        GameManager.Instance.UseInteraction();  // decrements counter / triggers night
     }
 }

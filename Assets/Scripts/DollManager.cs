@@ -1,38 +1,71 @@
 using UnityEngine;
 
+/// <summary>
+/// Attach to: same GameObject as GameManager, or its own "DollManager" GameObject.
+/// Assign in Inspector: elizabeth, oliver, marie (drag doll GameObjects in).
+/// </summary>
 public class DollManager : MonoBehaviour
 {
-    public DollBase[] allDolls; // Drag all doll gameobjects here in Inspector
+    [Header("Dolls (assign in Inspector)")]
+    public ElizabethLogic elizabeth;
+    public OliverLogic    oliver;
+    public MarieLogic     marie;
 
-    public UIManager uiManager;
+    // Convenience array — populated automatically in Awake
+    [HideInInspector] public DollBase[] allDolls;
 
-    public void EvaluateDolls(DollBase targetDoll = null)
+    private void Awake()
     {
-        // First pass: Apply neglect penalty to dolls that WEREN'T interacted with
-        if (targetDoll != null)
+        allDolls = new DollBase[] { elizabeth, oliver, marie };
+    }
+
+    // ── Called once at game start ───────────────────────────────────────────────
+
+    public void InitializeDolls()
+    {
+        // Elizabeth starting stats
+        elizabeth.state.dollName    = "Elizabeth";
+        elizabeth.state.cleanliness = 80;
+        elizabeth.state.mood        = 50;
+        elizabeth.state.corruption  = 40;
+
+        // Oliver starting stats
+        oliver.state.dollName    = "Oliver";
+        oliver.state.cleanliness = 80;
+        oliver.state.mood        = 30;
+        oliver.state.corruption  = 10;
+
+        // Marie starting stats
+        marie.state.dollName    = "Marie";
+        marie.state.cleanliness = 100;
+        marie.state.mood        = 90;
+        marie.state.corruption  = 30;
+
+        // Refresh all visuals with starting state
+        foreach (var doll in allDolls)
+            doll.visuals?.UpdateVisuals(doll.state);
+    }
+
+    // ── Called at end of each day by GameManager.StartNight() ──────────────────
+
+    public void RunNightForAllDolls()
+    {
+        foreach (var doll in allDolls)
+            doll.NightProcess();        // DollBase.NightProcess() handles everything
+    }
+
+    // ── Helpers for DayEventManager / InteractionManager ───────────────────────
+
+    public DollBase GetDollByName(string name)
+    {
+        switch (name.ToLower())
         {
-            foreach (DollBase doll in allDolls)
-            {
-                if (doll != targetDoll)
-                {
-                    // This doll was neglected tonight
-                    doll.state.neglectCounter++;
-                    uiManager.ShowMessage(doll.state.dollName + " feels abandoned...");
-                }
-            }
-        }
-
-        // Second pass: Process each doll's unique night event logic
-        foreach (DollBase doll in allDolls)
-        {
-            // Increment neglect for all dolls at start of night
-            doll.state.neglectCounter++;
-
-            // Trigger the unique logic for that specific doll type
-            doll.ProcessNightEvent();
-
-            // Finally, update the visual representation
-            doll.state.UpdateVisuals();
+            case "elizabeth": return elizabeth;
+            case "oliver":    return oliver;
+            case "marie":     return marie;
+            default:
+                Debug.LogWarning($"[DollManager] Unknown doll name: {name}");
+                return null;
         }
     }
 }

@@ -10,10 +10,10 @@ GameObject:
   m_Component:
   - component: {fileID: 761737551769627465}
   - component: {fileID: 5048121695339774430}
-  - component: {fileID: 9212222531574910300}
   - component: {fileID: 2569743588399400763}
+  - component: {fileID: 2252360113041441602}
   m_Layer: 0
-  m_Name: AngryDoll
+  m_Name: Elizabeth
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -28,7 +28,7 @@ Transform:
   m_GameObject: {fileID: 2234945472010783772}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 5.32, y: 0, z: 0}
   m_LocalScale: {x: 0.05, y: 0.05, z: 0.1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -93,26 +93,6 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!114 &9212222531574910300
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2234945472010783772}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8533156d6ff9be34fa168273386fe8fe, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DollState
-  dollName: 
-  spriteRenderer: {fileID: 0}
-  stage1_Normal: {fileID: 0}
-  stage2_Creepy: {fileID: 0}
-  stage3_Distorted: {fileID: 0}
-  mood: 50
-  corruption: 0
-  neglectCounter: 0
 --- !u!114 &2569743588399400763
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -125,4 +105,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b9e1b30f0a2988f47b3a05889a0b6b27, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AngryDollLogic
-  state: {fileID: 9212222531574910300}
+  _state:
+    dollName: 
+    mood: 0
+    cleanliness: 0
+    corruption: 0
+    neglectCounter: 0
+    consecutiveIgnoreCount: 0
+    ribbonRemovedFlag: 0
+    bloodNotCleanedFlag: 0
+    oliverBadEndFlag: 0
+  interactedToday: 0
+  visuals: {fileID: 0}
+  bloodSplashed: 0
+--- !u!114 &2252360113041441602
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2234945472010783772}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3771b892cfb083f4ba98a989f1dde227, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DollVisuals
+  spriteRenderer: {fileID: 5048121695339774430}

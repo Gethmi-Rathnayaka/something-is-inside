@@ -1,32 +1,43 @@
 using UnityEngine;
 
+/// <summary>
+/// Attach to: a persistent "GameManager" GameObject in your main scene.
+/// Assign in Inspector: dollManager, uiManager, dayEventManager, interactionManager.
+/// </summary>
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
 
+    [Header("Day Tracking")]
     public int day = 1;
     public int interactionsLeft = 3;
 
-    private DollBase lastInteractedDoll;
-
+    [Header("Scene References")]
     public DollManager dollManager;
     public UIManager uiManager;
     public DayEventManager dayEventManager;
     public InteractionManager interactionManager;
 
+    // ── Internal flags ──────────────────────────────────────────────────────────
+    private bool nightmareFlag = false;
+
     private void Awake()
     {
-        Instance = this;
+        if (Instance == null) Instance = this;
+        else Destroy(gameObject);
     }
 
     private void Start()
     {
+        // Set starting stats (called once)
+        dollManager.InitializeDolls();
         StartDay();
     }
 
+    // ── Day Flow ────────────────────────────────────────────────────────────────
+
     public void StartDay()
     {
-        // Check if we've reached day 10 (final judgment)
         if (day > 10)
         {
             DetermineFinalEnding();
@@ -34,75 +45,115 @@ public class GameManager : MonoBehaviour
         }
 
         interactionsLeft = 3;
-        lastInteractedDoll = null;
-        dayEventManager.SetDay(day);
+        nightmareFlag    = false;
 
         uiManager.UpdateDay(day);
-
-        DayEvent dayEvent = dayEventManager.GetCurrentDayEvent();
-        if (dayEvent != null)
-        {
-            uiManager.ShowMessage(dayEvent.eventTitle + "\n\n" + dayEvent.eventDescription);
-            // Present the 3 choices to the player
-            uiManager.DisplayChoices(dayEvent.choices);
-        }
+        dayEventManager.ShowDayEvent(day);      // shows observe text + sets up choices
     }
 
-    public void UseInteraction(DollBase targetDoll)
+    /// <summary>Called by InteractionManager after every successful interaction.</summary>
+    public void UseInteraction()
     {
-        lastInteractedDoll = targetDoll;
         interactionsLeft--;
 
         if (interactionsLeft <= 0)
-        {
             StartNight();
-        }
     }
 
     public void StartNight()
     {
-        // Night evaluation: dolls that weren't interacted with become neglected
-        dollManager.EvaluateDolls(lastInteractedDoll);
-        uiManager.StartNightSequence();
+        uiManager.HideChoices();
 
-        day++;
+        // Run night processing for all dolls
+        dollManager.RunNightForAllDolls();
 
-        Invoke(nameof(StartDay), 2f);
+        // Check bad end conditions immediately
+        if (CheckImmediateBadEnd())
+            return;
+
+        uiManager.StartNightSequence(() =>
+        {
+            day++;
+            StartDay();
+        });
     }
 
+    // ── Flags ───────────────────────────────────────────────────────────────────
+
+    public void SetNightmareFlag(bool value) => nightmareFlag = value;
+    public bool GetNightmareFlag()           => nightmareFlag;
+
+    // ── Ending Logic ────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Checks conditions that cause an immediate bad end mid-game.
+    /// Returns true if a bad end was triggered (caller should stop day flow).
+    /// </summary>
+    private bool CheckImmediateBadEnd()
+    {
+        var elizabeth = dollManager.elizabeth;
+        var oliver    = dollManager.oliver;
+        var marie     = dollManager.marie;
+
+        // Marie ribbon removed
+        if (marie.state.ribbonRemovedFlag)
+        {
+            uiManager.ShowEnding("The ribbon unravels completely. The room goes dark.\n— BAD END —");
+            return true;
+        }
+
+        // Elizabeth blood not cleaned (Day 8+)
+        if (elizabeth.state.bloodNotCleanedFlag)
+        {
+            uiManager.ShowEnding("Something spreads from Elizabeth's dress.\nYou should have cleaned it.\n— BAD END —");
+            return true;
+        }
+
+        // Oliver 3 days no comfort
+        if (oliver.state.oliverBadEndFlag)
+        {
+            uiManager.ShowEnding("Oliver's crying fills the house.\nThere is nothing left to comfort.\n— BAD END —");
+            return true;
+        }
+
+        // World collapse: 2 dolls corruption > 70
+        int highCorruption = 0;
+        foreach (var doll in dollManager.allDolls)
+            if (doll.state.corruption >= 70) highCorruption++;
+
+        if (highCorruption >= 2)
+        {
+            uiManager.ShowEnding("Something is very wrong.\nThe dolls are no longer just dolls.\n— BAD END —");
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>Called after Day 10 night processing.</summary>
     private void DetermineFinalEnding()
     {
-        // Evaluate which dolls are happy/corrupted based on player's 10 days of choices
-        int happyDolls = 0;
-        int corruptedDolls = 0;
+        // Check bad flags first
+        if (CheckImmediateBadEnd()) return;
 
-        DollBase[] allDolls = dollManager.allDolls;
-        foreach (DollBase doll in allDolls)
+        // Good end: all three dolls mood >= 60 AND corruption < 40
+        bool goodEnd = true;
+        foreach (var doll in dollManager.allDolls)
         {
-            if (doll.state.mood >= 60)
-                happyDolls++;
-            else if (doll.state.corruption >= 70)
-                corruptedDolls++;
-        }
-
-        // Determine ending
-        if (happyDolls >= 2)
-        {
-            uiManager.ShowMessage("The dolls smile at you. You are welcome to stay.");
-            // GOOD ENDING
-        }
-        else if (corruptedDolls >= 2)
-        {
-            uiManager.ShowMessage("The dolls' eyes turn black. You must LEAVE THIS HOUSE.");
-            // BAD ENDING
-        }
-        else
-        {
-            uiManager.ShowMessage("The dolls stare. Neither acceptance nor rejection. Ambiguous ending.");
-            // NEUTRAL ENDING
+            if (doll.state.mood < 60 || doll.state.corruption >= 40)
+            {
+                goodEnd = false;
+                break;
+            }
         }
 
-        // Game ends here
+        if (goodEnd)
+        {
+            uiManager.ShowEnding("The dolls smile at you.\nYou are welcome to stay.\n— GOOD END —");
+            return;
+        }
+
+        // Neutral end (fallthrough)
+        uiManager.ShowEnding("The dolls stare.\nNeither acceptance nor rejection.\n— NEUTRAL END —");
     }
 }
-

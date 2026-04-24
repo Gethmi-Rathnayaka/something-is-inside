@@ -1,33 +1,72 @@
 using UnityEngine;
 
-public class DollState : MonoBehaviour
+/// <summary>
+/// Pure data container for a doll's stats.
+/// This is a serializable data class, NOT a MonoBehaviour.
+/// DollBase holds an instance of this in its 'state' field.
+/// </summary>
+[System.Serializable]
+public class DollState
 {
+    // Identity
     public string dollName;
-    public SpriteRenderer spriteRenderer;
 
-    // Assign these in the Inspector
-    public Sprite stage1_Normal;
-    public Sprite stage2_Creepy;
-    public Sprite stage3_Distorted;
+    // Stats (0-100)
+    public int mood;
+    public int cleanliness;
+    public int corruption;
 
-    [Range(0, 100)] public int mood = 50;
-    [Range(0, 100)] public int corruption = 0;
-    public int neglectCounter = 0;
+    // Tracking
+    public int neglectCounter;          // days in a row NOT interacted
+    public int consecutiveIgnoreCount;  // used by Oliver / Marie
 
-    public void UpdateVisuals()
+    // Bad End Flags
+    public bool ribbonRemovedFlag;      // Marie only
+    public bool bloodNotCleanedFlag;    // Elizabeth only (Day 8)
+    public bool oliverBadEndFlag;       // Oliver: 3 consecutive days no comfort
+
+    // ── Stat modifiers ─────────────────────────────────────────────────────────
+
+    public void ModifyMood(int amount)
     {
-        // Example logic: Change sprite based on corruption or mood
-        if (corruption >= 70 || mood <= 20)
-            spriteRenderer.sprite = stage3_Distorted;
-        else if (corruption >= 30 || mood <= 40)
-            spriteRenderer.sprite = stage2_Creepy;
-        else
-            spriteRenderer.sprite = stage1_Normal;
+        mood = Mathf.Clamp(mood + amount, 0, 100);
     }
 
-    public void ModifyMood(int value)
+    public void ModifyCorruption(int amount)
     {
-        mood = Mathf.Clamp(mood + value, 0, 100);
-        UpdateVisuals(); 
+        corruption = Mathf.Clamp(corruption + amount, 0, 100);
     }
+
+    public void ModifyCleanliness(int amount)
+    {
+        cleanliness = Mathf.Clamp(cleanliness + amount, 0, 100);
+    }
+
+    // ── End-of-day passive decay ────────────────────────────────────────────────
+    // Call this once per day from DollBase.ProcessNightEvent()
+
+    /// <param name="isElizabeth">Elizabeth loses 20 cleanliness instead of 10</param>
+    public void ApplyDailyDecay(bool isElizabeth = false)
+    {
+        int cleanLoss = isElizabeth ? 20 : 10;
+        ModifyCleanliness(-cleanLoss);
+
+        // Corruption escalation
+        bool moodLow = mood < 30;
+        bool cleanLow = cleanliness < 30;
+
+        if (moodLow && cleanLow)
+            ModifyCorruption(20);
+        else if (moodLow || cleanLow)
+            ModifyCorruption(10);
+
+        // Positive care bonus (handled in interaction, but also prevents passive gain)
+        // We do NOT add -5 here; that's handled when an interaction is performed.
+    }
+
+    // ── Quick read-only helpers ─────────────────────────────────────────────────
+
+    public bool IsMoodLow => mood < 30;
+    public bool IsCleanLow => cleanliness < 30;
+    public bool IsCorruptHigh => corruption > 60;
 }
