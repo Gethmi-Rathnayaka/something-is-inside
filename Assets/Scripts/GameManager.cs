@@ -45,7 +45,7 @@ public class GameManager : MonoBehaviour
         }
 
         interactionsLeft = 3;
-        nightmareFlag    = false;
+        nightmareFlag = false;
 
         uiManager.UpdateDay(day);
         dayEventManager.ShowDayEvent(day);      // shows observe text + sets up choices
@@ -56,14 +56,26 @@ public class GameManager : MonoBehaviour
     {
         interactionsLeft--;
 
+        uiManager.UpdateInteractionHeader(interactionsLeft);
+
         if (interactionsLeft <= 0)
             StartNight();
     }
 
     public void StartNight()
     {
+        // Hide all interaction UI and show "Day is over" dialogue
+        uiManager.HideInteractionUI();
         uiManager.HideChoices();
 
+        uiManager.StartDialogue(new string[] { "Day is over." }, () =>
+        {
+            RunNightProcessing();
+        });
+    }
+
+    private void RunNightProcessing()
+    {
         // Run night processing for all dolls
         dollManager.RunNightForAllDolls();
 
@@ -78,12 +90,9 @@ public class GameManager : MonoBehaviour
         });
     }
 
-    // ── Flags ───────────────────────────────────────────────────────────────────
-
     public void SetNightmareFlag(bool value) => nightmareFlag = value;
-    public bool GetNightmareFlag()           => nightmareFlag;
+    public bool GetNightmareFlag() => nightmareFlag;
 
-    // ── Ending Logic ────────────────────────────────────────────────────────────
 
     /// <summary>
     /// Checks conditions that cause an immediate bad end mid-game.
@@ -92,8 +101,8 @@ public class GameManager : MonoBehaviour
     private bool CheckImmediateBadEnd()
     {
         var elizabeth = dollManager.elizabeth;
-        var oliver    = dollManager.oliver;
-        var marie     = dollManager.marie;
+        var oliver = dollManager.oliver;
+        var marie = dollManager.marie;
 
         // Marie ribbon removed
         if (marie.state.ribbonRemovedFlag)

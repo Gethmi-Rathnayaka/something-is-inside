@@ -11,7 +11,7 @@ using UnityEngine;
 public class InteractionManager : MonoBehaviour
 {
     public DollManager dollManager;
-    public UIManager   uiManager;
+    public UIManager uiManager;
 
     // ── Public entry points (called by UIManager button lambdas) ───────────────
 
@@ -40,6 +40,22 @@ public class InteractionManager : MonoBehaviour
     public void GiftOliver(string item)
     {
         string feedback = dollManager.oliver.GiftItem(item);
+        FinishInteraction(feedback);
+    }
+
+    public void GiftElizabeth(string item)
+    {
+        // Elizabeth gets +2 mood for any gift
+        dollManager.elizabeth.state.ModifyMood(2);
+        string feedback = $"Elizabeth receives the {item}. +2 Mood";
+        FinishInteraction(feedback);
+    }
+
+    public void GiftMarie(string item)
+    {
+        // Marie gets +2 mood for any gift
+        dollManager.marie.state.ModifyMood(2);
+        string feedback = $"Marie receives the {item}. +2 Mood";
         FinishInteraction(feedback);
     }
 
@@ -109,7 +125,5 @@ public class InteractionManager : MonoBehaviour
         uiManager.ShowMessage(feedbackText);
         uiManager.UpdateStatsDisplay(dollManager.allDolls);
         GameManager.Instance.UseInteraction();
-
-        GameManager.Instance.UseInteraction();  // decrements counter / triggers night
     }
 }
