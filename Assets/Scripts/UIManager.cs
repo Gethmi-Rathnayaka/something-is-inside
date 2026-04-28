@@ -156,6 +156,9 @@ public class UIManager : MonoBehaviour
         if (dayCounterPanel != null)
             dayCounterPanel.SetActive(true);
 
+        if (returnToMenuButton != null)
+            returnToMenuButton.SetActive(true);
+
         UpdateInteractionHeader(interactionsLeft);
 
         HideChoices();
@@ -301,6 +304,9 @@ public class UIManager : MonoBehaviour
 
         if (dayCounterPanel != null)
             dayCounterPanel.SetActive(false);
+
+        if (returnToMenuButton != null)
+            returnToMenuButton.SetActive(true);
     }
 
     public void UpdateInteractionHeader(int interactionsLeft)
@@ -359,6 +365,7 @@ public class UIManager : MonoBehaviour
             closeSpecialEventButton.onClick.RemoveAllListeners();
             closeSpecialEventButton.onClick.AddListener(HideSpecialEventPanel);
         }
+
     }
 
     /// <summary>
@@ -368,6 +375,9 @@ public class UIManager : MonoBehaviour
     {
         if (specialEventPanel != null)
             specialEventPanel.SetActive(false);
+
+        if (returnToMenuButton != null)
+            returnToMenuButton.SetActive(true);
     }
 
     // ── Basic display ───────────────────────────────────────────────────────────
