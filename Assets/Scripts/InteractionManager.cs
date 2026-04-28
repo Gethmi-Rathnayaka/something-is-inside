@@ -26,8 +26,16 @@ public class InteractionManager : MonoBehaviour
 
     public void BrushHair()
     {
-        // Only Elizabeth has brush hair
         string feedback = dollManager.elizabeth.BrushHair();
+        FinishInteraction(feedback);
+    }
+
+    public void BrushHair(string dollName)
+    {
+        var doll = dollManager.GetDollByName(dollName);
+        if (doll == null) return;
+
+        string feedback = doll.BrushHair();
         FinishInteraction(feedback);
     }
 

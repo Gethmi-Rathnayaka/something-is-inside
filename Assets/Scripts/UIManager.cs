@@ -1,4 +1,3 @@
-using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using System;
@@ -10,9 +9,10 @@ using TMPro;
 ///
 /// Key difference from old version:
 ///  - SetChoices() takes (label, Action) tuples — no DayEvent.Choice needed.
-///  - StartNightSequence() takes a callback so GameManager.StartDay runs
-///    AFTER the fade, not via Invoke.
+///  - Day transitions are immediate (no night overlay sequence).
 /// </summary>
+public enum EndingType { Good, Bad, Neutral }
+
 public class UIManager : MonoBehaviour
 {
     public static UIManager Instance { get; private set; }
@@ -30,6 +30,8 @@ public class UIManager : MonoBehaviour
     [Header("Text")]
     public TextMeshProUGUI dialogueText;
     public TextMeshProUGUI dayText;
+    public TextMeshProUGUI currentDayText;
+    public GameObject dayCounterPanel;          // Parent GameObject for day counter (hide during dialogue)
 
     [Header("Stat Display (optional — assign if you have stat bars/labels)")]
     public TextMeshProUGUI elizabethStatsText;
@@ -40,10 +42,12 @@ public class UIManager : MonoBehaviour
     public Button[] choiceButtons;     // drag buttons in order; label is child Text
 
     [Header("Overlays")]
-    public GameObject nightOverlay;
-    public GameObject fadePanel;
     public GameObject endingPanel;
     public TextMeshProUGUI endingText;
+    public Image endingImagePanel;     // Image component to display ending-specific image
+    public Sprite goodEndingImage;     // Image shown for GOOD END
+    public Sprite badEndingImage;      // Image shown for BAD END
+    public Sprite neutralEndingImage;  // Image shown for NEUTRAL END
 
     [Header("Dialogue Sequence")]
     public GameObject dialoguePanel;
@@ -67,6 +71,9 @@ public class UIManager : MonoBehaviour
     public Button[] specialEventButtons;          // up to 3 buttons for event choices
     public Button closeSpecialEventButton;        // Close button
 
+    [Header("Global UI")]
+    public GameObject returnToMenuButton;
+
     private string[] currentLines;
     private int currentLineIndex;
     private Action onDialogueComplete;
@@ -81,6 +88,9 @@ public class UIManager : MonoBehaviour
 
         // Hide interaction UI during dialogue
         HideInteractionUI();
+
+        if (returnToMenuButton != null)
+            returnToMenuButton.SetActive(false);
 
         if (dialoguePanel != null)
             dialoguePanel.SetActive(true);
@@ -115,6 +125,9 @@ public class UIManager : MonoBehaviour
             if (nextButton != null)
                 nextButton.gameObject.SetActive(false);
 
+            if (returnToMenuButton != null)
+                returnToMenuButton.SetActive(true);
+
             onDialogueComplete?.Invoke();
             return;
         }
@@ -139,6 +152,9 @@ public class UIManager : MonoBehaviour
     {
         if (interactionHeaderPanel != null)
             interactionHeaderPanel.SetActive(true);
+
+        if (dayCounterPanel != null)
+            dayCounterPanel.SetActive(true);
 
         UpdateInteractionHeader(interactionsLeft);
 
@@ -282,6 +298,9 @@ public class UIManager : MonoBehaviour
 
         if (interactionHeaderPanel != null)
             interactionHeaderPanel.SetActive(false);
+
+        if (dayCounterPanel != null)
+            dayCounterPanel.SetActive(false);
     }
 
     public void UpdateInteractionHeader(int interactionsLeft)
@@ -304,7 +323,7 @@ public class UIManager : MonoBehaviour
             specialEventPanel.SetActive(true);
 
         if (specialEventTitleText != null)
-            specialEventTitleText.text = title;
+            specialEventTitleText.text = $"Event! {title}";
 
         if (specialEventDescText != null)
             specialEventDescText.text = description;
@@ -361,8 +380,13 @@ public class UIManager : MonoBehaviour
 
     public void UpdateDay(int day)
     {
+        string formattedDay = $"Day {day:00}";
+
         if (dayText != null)
-            dayText.text = "Day " + day;
+            dayText.text = formattedDay;
+
+        if (currentDayText != null)
+            currentDayText.text = formattedDay;
     }
 
     /// <summary>
@@ -422,34 +446,6 @@ public class UIManager : MonoBehaviour
             if (btn != null) btn.gameObject.SetActive(false);
     }
 
-    // ── Night sequence ──────────────────────────────────────────────────────────
-
-    /// <summary>
-    /// Fades to night, waits, then calls onComplete so GameManager can advance the day.
-    /// </summary>
-    public void StartNightSequence(Action onComplete)
-    {
-        StartCoroutine(NightRoutine(onComplete));
-    }
-
-    private IEnumerator NightRoutine(Action onComplete)
-    {
-        // Fade in
-        if (fadePanel != null) fadePanel.SetActive(true);
-        yield return new WaitForSeconds(0.5f);
-
-        if (nightOverlay != null) nightOverlay.SetActive(true);
-        yield return new WaitForSeconds(1.5f);
-
-        // Fade out
-        if (nightOverlay != null) nightOverlay.SetActive(false);
-        if (fadePanel != null) fadePanel.SetActive(false);
-
-        yield return new WaitForSeconds(0.8f);  // Extended buffer to prevent scene flash during transition
-
-        onComplete?.Invoke();   // → GameManager.StartDay() runs here
-    }
-
     // ── Endings ─────────────────────────────────────────────────────────────────
 
     public void ShowEnding(string message)
@@ -461,5 +457,50 @@ public class UIManager : MonoBehaviour
 
         // Also put it in dialogue as fallback
         ShowMessage(message);
+    }
+
+    /// <summary>ShowEnding with explicit ending type — displays the appropriate image.</summary>
+    public void ShowEnding(string message, EndingType endingType)
+    {
+        ShowEnding(message);
+
+        // Set ending image based on type
+        if (endingImagePanel != null)
+        {
+            Sprite imageToShow = null;
+
+            switch (endingType)
+            {
+                case EndingType.Good:
+                    imageToShow = goodEndingImage;
+                    break;
+                case EndingType.Bad:
+                    imageToShow = badEndingImage;
+                    break;
+                case EndingType.Neutral:
+                    imageToShow = neutralEndingImage;
+                    break;
+            }
+
+            if (imageToShow != null)
+                endingImagePanel.sprite = imageToShow;
+            else
+                Debug.LogWarning($"No image assigned for ending type: {endingType}");
+        }
+    }
+
+    /// <summary>
+    /// Return to menu while saving current game state.
+    /// </summary>
+    public void ReturnToMenu()
+    {
+        // Save game state before returning to menu
+        if (GameManager.Instance != null && SaveManager.Instance != null)
+        {
+            GameManager.Instance.SaveCurrentGameState();
+        }
+
+        // Load menu scene
+        UnityEngine.SceneManagement.SceneManager.LoadScene("boot");
     }
 }

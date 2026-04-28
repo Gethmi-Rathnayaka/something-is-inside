@@ -9,6 +9,9 @@ public class ElizabethLogic : DollBase
     // Tracks how many days in a row she hasn't been cleaned
     private int daysNotCleaned = 0;
 
+    // Tracks how many days in a row she has been left alone.
+    private int daysNotInteracted = 0;
+
     // Set by GameManager on Day 8 blood event
     [HideInInspector] public bool bloodSplashed = false;
 
@@ -17,32 +20,29 @@ public class ElizabethLogic : DollBase
     public override string Clean()
     {
         daysNotCleaned = 0;
+        daysNotInteracted = 0;
         state.bloodNotCleanedFlag = false;  // cleaning removes blood-flag danger
-
-        // Remove distorted face sprite when cared for
-        if (visuals != null)
-            visuals.SetSpriteFlag("hasDistortedFace", false);
 
         state.ModifyCleanliness(30);
         state.ModifyMood(5);
         state.ModifyCorruption(-5);
         ApplyCareBonus();
         interactedToday = true;
+        SyncSpecialVisuals();
         visuals?.UpdateVisuals(state);
         return "Elizabeth gleams. She looks... pleased.";
     }
 
     public override string BrushHair()
     {
-        // Remove distorted face sprite when cared for
-        if (visuals != null)
-            visuals.SetSpriteFlag("hasDistortedFace", false);
+        daysNotInteracted = 0;
 
         // Brush: +20 mood, -10 corruption (plus base -5 care bonus)
         state.ModifyMood(20);
         state.ModifyCorruption(-10);
         ApplyCareBonus();
         interactedToday = true;
+        SyncSpecialVisuals();
         visuals?.UpdateVisuals(state);
         return "Elizabeth's hair flows perfectly. Her expression softens.";
     }
@@ -50,7 +50,10 @@ public class ElizabethLogic : DollBase
     public override string Ignore()
     {
         state.ModifyMood(-15);      // Elizabeth ignores hit is -15, not -10
+        state.ModifyCorruption(8);
         state.consecutiveIgnoreCount++;
+        daysNotInteracted++;
+        SyncSpecialVisuals();
         visuals?.UpdateVisuals(state);
         return "Elizabeth stares. Her jaw tightens.";
     }
@@ -65,14 +68,27 @@ public class ElizabethLogic : DollBase
         else
             daysNotCleaned = 0;
 
+        if (!interactedToday)
+            daysNotInteracted++;
+        else
+            daysNotInteracted = 0;
+
+        // Neglect should visibly escalate even if the player never clicks Elizabeth.
+        if (!interactedToday)
+        {
+            state.ModifyCorruption(15);
+            state.ModifyMood(-5);
+        }
+
+        SyncSpecialVisuals();
+
         // ── Nightmare flag: 2 days without cleaning ──
         if (daysNotCleaned >= 2)
         {
-            // Tell GameManager to trigger nightmare UI next day
-            GameManager.Instance.SetNightmareFlag(true);
+            // Nightmare UI is disabled; keep this as save tracking only.
             if (SaveManager.Instance != null)
                 SaveManager.Instance.TrackEvent("elizabethNightmare");
-            Debug.Log("[Elizabeth] Nightmare flag SET — 2 days uncleaned.");
+            Debug.Log("[Elizabeth] Nightmare condition reached — tracked only.");
         }
 
         // ── Day 8 blood check ──
@@ -85,5 +101,19 @@ public class ElizabethLogic : DollBase
 
         // ── Hair grows longer on Day 7 if mood/cleanliness low ──
         // DayEventManager checks Day 7 separately; we just let stats reflect it.
+    }
+
+    private void SyncSpecialVisuals()
+    {
+        if (visuals == null)
+            return;
+
+        // Only show distorted face if mood is actually low (matches Day 3 trigger)
+        // OR if she's been left alone (daysNotInteracted > 0)
+        bool shouldShowDistortedFace =
+            state.mood < 50 ||
+            daysNotInteracted > 0;
+
+        visuals.SetSpriteFlag("hasDistortedFace", shouldShowDistortedFace);
     }
 }

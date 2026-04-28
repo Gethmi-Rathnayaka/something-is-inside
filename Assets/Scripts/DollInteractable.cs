@@ -49,14 +49,36 @@ public class DollInteractable : MonoBehaviour, IPointerClickHandler
     private (string label, System.Action action)[] GetDollActions()
     {
         InteractionManager intManager = FindFirstObjectByType<InteractionManager>();
+        var list = new System.Collections.Generic.List<(string label, System.Action action)>();
 
-        return new (string label, System.Action action)[]
+        // Clean is universal
+        list.Add(("Clean", () => intManager.CleanDoll(dollLogic.state.dollName.ToLower())));
+        list.Add(("Brush Hair", () => intManager.BrushHair(dollLogic.state.dollName.ToLower())));
+
+        // Doll-specific actions
+        if (dollLogic is ElizabethLogic)
         {
-            ("Clean", () => intManager.CleanDoll(dollLogic.state.dollName.ToLower())),
-            ("Brush Hair", () => intManager.BrushHair()),
-            ("Gift", () => ShowGiftSubmenu()),
-            ("Comfort", () => intManager.ComfortOliver())
-        };
+            list.Add(("Gift", () => ShowGiftSubmenu()));
+            // Elizabeth does not have a Comfort action in the UI
+        }
+        else if (dollLogic is OliverLogic)
+        {
+            // Oliver supports Comfort and Gifts
+            list.Add(("Comfort", () => intManager.ComfortOliver()));
+            list.Add(("Gift", () => ShowGiftSubmenu()));
+        }
+        else if (dollLogic is MarieLogic)
+        {
+            // Marie supports Gifts; brush/comfort not applicable
+            list.Add(("Gift", () => ShowGiftSubmenu()));
+        }
+        else
+        {
+            // Fallback: offer Gift and Clean
+            list.Add(("Gift", () => ShowGiftSubmenu()));
+        }
+
+        return list.ToArray();
     }
 
     private void ShowGiftSubmenu()

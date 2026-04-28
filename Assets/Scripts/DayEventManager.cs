@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 /// <summary>
 /// Attach to: its own "DayEventManager" GameObject.
@@ -74,8 +75,8 @@ public class DayEventManager : MonoBehaviour
             "Hmm. Why is Oliver's face wet? Just like tears."
         };
 
-        // If Oliver cried, update his sprite
-        if (oliver.state.mood < 50 && oliver.visuals != null)
+        // Oliver is always wet on Day 2 (matches the dialogue)
+        if (oliver.visuals != null)
         {
             oliver.visuals.SetSpriteFlag("isWet", true);
             oliver.visuals.UpdateVisuals(oliver.state);
@@ -94,9 +95,6 @@ public class DayEventManager : MonoBehaviour
 
         if (marie.state.corruption > 50)
             lines.Add("Marie's ribbon twitches. Did it... move?");
-
-        if (GameManager.Instance.GetNightmareFlag())
-            lines.Add("...Elizabeth was in your dreams last night. She looked angry.");
 
         uiManager.StartDialogue(lines.ToArray(), () =>
         {
@@ -118,7 +116,7 @@ public class DayEventManager : MonoBehaviour
 
         if (eli.state.mood < 50)
         {
-            lines.Add("Elizabeth's expression looks... distorted. Like a smile that's too wide.");
+            lines.Add("Elizabeth's expression looks... distorted. Like there's bloody vines on her face.");
 
             // Update sprite for distorted face
             if (eli.visuals != null)
@@ -151,7 +149,7 @@ public class DayEventManager : MonoBehaviour
             "They're watching me.",
             "I walked across the room and — their eyes followed.",
             "Left. Right. Left again.",
-            "...They're just dolls."
+            "...They're just dolls right? They're not alive. They're not watching me. They're just dolls."
         },
         () =>
         {
@@ -165,6 +163,16 @@ public class DayEventManager : MonoBehaviour
     private void Day5()
     {
         var marie = dollManager.marie;
+
+        if (marie.visuals != null)
+        {
+            marie.visuals.SetSpriteFlag("isWrappedInRibbon", false);
+            int originalCorruption = marie.state.corruption;
+            if (originalCorruption <= 60)
+                marie.state.corruption = 61;
+            marie.visuals.UpdateVisuals(marie.state);
+            marie.state.corruption = originalCorruption;
+        }
 
         uiManager.StartDialogue(new string[]
         {
@@ -183,29 +191,26 @@ public class DayEventManager : MonoBehaviour
                 "The ribbon is wet and looks... wrong.\nShould you remove it?",
                 new (string label, System.Action action)[]
                 {
-                    ("Remove the ribbon",  () => 
+                    ("Remove the ribbon",  () =>
                     {
                         if (SaveManager.Instance != null)
                             SaveManager.Instance.TrackEvent("day5_RibbonRemoved");
-                        interactionManager.RemoveMariesRibbon();
+                        marie.state.ribbonRemovedFlag = true;
+                        uiManager.ShowMessage("The ribbon unravels. Something in the air changes.");
                     }),
-                    ("Leave it alone",     () => 
+                    ("Leave it alone",     () =>
                     {
-                        // If corruption is very high, ribbon wraps around her
-                        if (marie.state.corruption > 70 && marie.visuals != null)
+                        // Visual-only outcome; no stat changes.
+                        if (marie.visuals != null)
                         {
-                            marie.visuals.SetSpriteFlag("isWrappedInRibbon", true);
+                            marie.visuals.SetSpriteFlag("isWrappedInRibbon", false);
                             marie.visuals.UpdateVisuals(marie.state);
-                            if (SaveManager.Instance != null)
-                            {
-                                SaveManager.Instance.TrackEvent("day5_RibbonWrapped");
-                                SaveManager.Instance.TrackSpriteUnlocked("marie_WrappedInRibbon");
-                            }
-                            uiManager.ShowMessage("The ribbon coils tighter around Marie...");
                         }
-                        interactionManager.LeaveMariesRibbon();
+                        if (SaveManager.Instance != null)
+                            SaveManager.Instance.TrackEvent("day5_RibbonEvent");
+                        uiManager.ShowMessage("You leave the ribbon alone.");
                     }),
-                    ("Not today",          () => interactionManager.NotToday())
+                    ("Not today",          () => uiManager.ShowMessage("You leave the ribbon alone for now."))
                 }
             );
         });
@@ -219,45 +224,55 @@ public class DayEventManager : MonoBehaviour
         var oliver = dollManager.oliver;
         var marie = dollManager.marie;
 
-        // Check if 2+ dolls have corruption > 50
-        int highCorrupt = 0;
-        if (eli.state.corruption > 50) highCorrupt++;
-        if (oliver.state.corruption > 50) highCorrupt++;
-        if (marie.state.corruption > 50) highCorrupt++;
+        if (marie.visuals != null)
+        {
+            marie.visuals.SetSpriteFlag("isWrappedInRibbon", false);
+            marie.visuals.UpdateVisuals(marie.state);
+        }
+
+        // Track which dolls have corruption > 50
+        bool eliCorrupt = eli.state.corruption > 50;
+        bool oliverCorrupt = oliver.state.corruption > 50;
+        bool marieCorrupt = marie.state.corruption > 50;
+
+        int highCorrupt = (eliCorrupt ? 1 : 0) + (oliverCorrupt ? 1 : 0) + (marieCorrupt ? 1 : 0);
 
         if (highCorrupt >= 2)
         {
-            uiManager.StartDialogue(new string[]
-            {
-                "They've switched places.",
-                "Elizabeth is where Oliver was. Oliver where Marie sat.",
-                "I didn't touch them."
-            },
+            // Build dialogue describing which dolls look corrupted
+            List<string> corruptLines = new List<string>();
+            corruptLines.Add("Something is different about them today.");
+
+            if (eliCorrupt)
+                corruptLines.Add("Elizabeth Her face looks... wrong.");
+            if (oliverCorrupt)
+                corruptLines.Add("Oliver's eyes are dripping blood!");
+            if (marieCorrupt)
+                corruptLines.Add("Marie's ribbon looks wet. Something is dripping from it.");
+
+            corruptLines.Add("They've all changed. What do I do?");
+
+            uiManager.StartDialogue(corruptLines.ToArray(),
             () =>
             {
                 uiManager.ShowSpecialEventPanel(
-                    "The Dolls Have Moved",
-                    "They've switched places on the shelf.\nWhat will you do?",
+                    "Something Wrong",
+                    "The dolls look worse than before.\nWhat will you do?",
                     new (string label, System.Action action)[]
                     {
-                        ("Switch them back", () =>
+                        ("Comfort them", () =>
                         {
-                            // Switching back adds +5 corruption to both swapped dolls
-                            eli.state.ModifyCorruption(5);
-                            oliver.state.ModifyCorruption(5);
-                            interactionManager.NotToday();
-                            uiManager.ShowMessage("You move them back. They feel heavier than they should.");
+                            uiManager.ShowMessage("You try to comfort them. They feel cold.");
                         }),
-                        ("Leave them", () =>
+                        ("Leave them alone", () =>
                         {
-                            interactionManager.NotToday();
-                            uiManager.ShowMessage("You leave them. Maybe they prefer it this way.");
+                            uiManager.ShowMessage("You step back. Maybe you shouldn't touch them right now.");
                         }),
                         ("Interact with them",  () => ShowStandardChoices())
                     }
                 );
                 if (SaveManager.Instance != null)
-                    SaveManager.Instance.TrackEvent("day6_DollsMoved");
+                    SaveManager.Instance.TrackEvent("day6_DollsCorrupted");
             });
         }
         else
@@ -305,6 +320,8 @@ public class DayEventManager : MonoBehaviour
 
         uiManager.StartDialogue(lines.ToArray(), () =>
         {
+             if (SaveManager.Instance != null)
+                SaveManager.Instance.TrackEvent("day7_ElizabethHair");
             ShowStandardChoices();
         });
     }
@@ -316,7 +333,7 @@ public class DayEventManager : MonoBehaviour
     {
         // Trigger blood event
         dollManager.elizabeth.bloodSplashed = true;
-        
+
         // Update Elizabeth's sprite to show blood
         if (dollManager.elizabeth.visuals != null)
         {
@@ -345,14 +362,28 @@ public class DayEventManager : MonoBehaviour
                 "Your blood dripped onto Elizabeth's dress.\nIt's spreading...",
                 new (string label, System.Action action)[]
                 {
-                    ("Clean Elizabeth immediately", () => interactionManager.CleanBloodFromElizabeth()),
-                    ("It's fine, ignore it",        () => 
+                    ("Clean Elizabeth immediately", () =>
+                    {
+                        dollManager.elizabeth.bloodSplashed = false;
+                        dollManager.elizabeth.state.bloodNotCleanedFlag = false;
+
+                        if (dollManager.elizabeth.visuals != null)
+                        {
+                            dollManager.elizabeth.visuals.SetSpriteFlag("hasBlood", false);
+                            dollManager.elizabeth.visuals.UpdateVisuals(dollManager.elizabeth.state);
+                        }
+
+                        uiManager.ShowMessage("You clean the blood from Elizabeth's dress.");
+                    }),
+                    ("It's fine, ignore it",        () =>
                     {
                         if (SaveManager.Instance != null)
                             SaveManager.Instance.TrackEvent("day8_BloodIgnored");
-                        interactionManager.IgnoreBloodOnElizabeth();
+                        dollManager.elizabeth.bloodSplashed = true;
+                        dollManager.elizabeth.state.bloodNotCleanedFlag = true;
+                        uiManager.ShowMessage("You look away. It's probably nothing.");
                     }),
-                    ("Interact with others",        () => ShowStandardChoices())
+                    ("Interact with others",        () => uiManager.ShowMessage("You ignore the blood for now."))
                 }
             );
         });

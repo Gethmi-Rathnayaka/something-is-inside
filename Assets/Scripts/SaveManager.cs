@@ -1,10 +1,60 @@
 using UnityEngine;
 
+/// <summary>
+/// Holds the current game state (day, interactions, doll stats).
+/// </summary>
+[System.Serializable]
+public class GameState
+{
+    public int currentDay;
+    public int interactionsLeft;
+    public DollStateSnapshot elizabeth;
+    public DollStateSnapshot oliver;
+    public DollStateSnapshot marie;
+}
+
+/// <summary>
+/// Snapshot of a single doll's state for saving/loading.
+/// </summary>
+[System.Serializable]
+public class DollStateSnapshot
+{
+    public string dollName;
+    public int mood;
+    public int cleanliness;
+    public int corruption;
+    public bool ribbonRemovedFlag;
+    public bool bloodNotCleanedFlag;
+    public bool oliverBadEndFlag;
+
+    public DollStateSnapshot(DollState state)
+    {
+        dollName = state.dollName;
+        mood = state.mood;
+        cleanliness = state.cleanliness;
+        corruption = state.corruption;
+        ribbonRemovedFlag = state.ribbonRemovedFlag;
+        bloodNotCleanedFlag = state.bloodNotCleanedFlag;
+        oliverBadEndFlag = state.oliverBadEndFlag;
+    }
+
+    public void ApplyTo(DollState state)
+    {
+        state.mood = mood;
+        state.cleanliness = cleanliness;
+        state.corruption = corruption;
+        state.ribbonRemovedFlag = ribbonRemovedFlag;
+        state.bloodNotCleanedFlag = bloodNotCleanedFlag;
+        state.oliverBadEndFlag = oliverBadEndFlag;
+    }
+}
+
 public class SaveManager : MonoBehaviour
 {
     public static SaveManager Instance;
 
     public AchievementData data = new AchievementData();
+    public GameState gameState = new GameState();
 
     private void Awake()
     {
@@ -30,6 +80,52 @@ public class SaveManager : MonoBehaviour
             string json = PlayerPrefs.GetString("SAVE_DATA");
             data = JsonUtility.FromJson<AchievementData>(json);
         }
+    }
+
+    /// <summary>
+    /// Save the current game state (day, interactions, doll stats).
+    /// Call this when returning to menu or before loading/exiting.
+    /// </summary>
+    public void SaveGameState(int currentDay, int interactionsLeft, DollBase elizabeth, DollBase oliver, DollBase marie)
+    {
+        gameState.currentDay = currentDay;
+        gameState.interactionsLeft = interactionsLeft;
+        gameState.elizabeth = new DollStateSnapshot(elizabeth.state);
+        gameState.oliver = new DollStateSnapshot(oliver.state);
+        gameState.marie = new DollStateSnapshot(marie.state);
+
+        string json = JsonUtility.ToJson(gameState);
+        PlayerPrefs.SetString("GAME_STATE", json);
+        PlayerPrefs.Save();
+    }
+
+    /// <summary>
+    /// Load the saved game state.
+    /// </summary>
+    public void LoadGameState()
+    {
+        if (PlayerPrefs.HasKey("GAME_STATE"))
+        {
+            string json = PlayerPrefs.GetString("GAME_STATE");
+            gameState = JsonUtility.FromJson<GameState>(json);
+        }
+    }
+
+    /// <summary>
+    /// Check if a game state save exists.
+    /// </summary>
+    public bool HasGameState()
+    {
+        return PlayerPrefs.HasKey("GAME_STATE");
+    }
+
+    /// <summary>
+    /// Clear the saved game state (for New Game).
+    /// </summary>
+    public void ClearGameState()
+    {
+        PlayerPrefs.DeleteKey("GAME_STATE");
+        PlayerPrefs.Save();
     }
 
     /// <summary>

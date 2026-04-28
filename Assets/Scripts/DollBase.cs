@@ -34,6 +34,15 @@ public abstract class DollBase : MonoBehaviour
         return $"{state.dollName} looks cleaner.";
     }
 
+    public virtual string BrushHair()
+    {
+        state.ModifyMood(3);
+        state.ModifyCorruption(-2);
+        interactedToday = true;
+        visuals?.UpdateVisuals(state);
+        return $"You smooth {state.dollName}'s hair.";
+    }
+
     public virtual string Ignore()
     {
         state.ModifyMood(-10);
@@ -44,7 +53,6 @@ public abstract class DollBase : MonoBehaviour
     }
 
     // Override in subclasses for doll-specific actions
-    public virtual string BrushHair() => "Nothing happens.";
     public virtual string GiftItem(string item) => "Nothing happens.";
     public virtual string Comfort() => "Nothing happens.";
 

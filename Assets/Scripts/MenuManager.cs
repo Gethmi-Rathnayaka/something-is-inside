@@ -8,6 +8,7 @@ public class MenuManager : MonoBehaviour
     [Header("UI References")]
     public GameObject quitConfirmationPanel;  // Assign the quit confirmation popup in Inspector
     public GameObject creditsPanel;           // Assign the credits popup in Inspector (optional)
+    public UnityEngine.UI.Button continueButton;      // Continue button (will be hidden if no save)
 
     private void Awake()
     {
@@ -20,11 +21,30 @@ public class MenuManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Load the game scene to start playing.
+    /// Start a new game (clears any existing save).
+    /// </summary>
+    public void StartNewGame()
+    {
+        if (SaveManager.Instance != null)
+            SaveManager.Instance.ClearGameState();
+
+        SceneManager.LoadScene("game");
+    }
+
+    /// <summary>
+    /// Continue from the last saved game.
+    /// </summary>
+    public void ContinueGame()
+    {
+        SceneManager.LoadScene("game");
+    }
+
+    /// <summary>
+    /// Load the game scene to start playing (legacy name - use StartNewGame or ContinueGame).
     /// </summary>
     public void GoToGame()
     {
-        SceneManager.LoadScene("game");
+        StartNewGame();
     }
 
     /// <summary>

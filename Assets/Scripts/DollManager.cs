@@ -8,8 +8,8 @@ public class DollManager : MonoBehaviour
 {
     [Header("Dolls (assign in Inspector)")]
     public ElizabethLogic elizabeth;
-    public OliverLogic    oliver;
-    public MarieLogic     marie;
+    public OliverLogic oliver;
+    public MarieLogic marie;
 
     // Convenience array — populated automatically in Awake
     [HideInInspector] public DollBase[] allDolls;
@@ -24,29 +24,29 @@ public class DollManager : MonoBehaviour
     public void InitializeDolls()
     {
         // Elizabeth starting stats
-        elizabeth.state.dollName    = "Elizabeth";
+        elizabeth.state.dollName = "Elizabeth";
         elizabeth.state.cleanliness = 80;
-        elizabeth.state.mood        = 50;
-        elizabeth.state.corruption  = 40;
+        elizabeth.state.mood = 50;
+        elizabeth.state.corruption = 40;
 
         // Oliver starting stats
-        oliver.state.dollName    = "Oliver";
+        oliver.state.dollName = "Oliver";
         oliver.state.cleanliness = 80;
-        oliver.state.mood        = 30;
-        oliver.state.corruption  = 10;
+        oliver.state.mood = 30;
+        oliver.state.corruption = 10;
 
         // Marie starting stats
-        marie.state.dollName    = "Marie";
+        marie.state.dollName = "Marie";
         marie.state.cleanliness = 100;
-        marie.state.mood        = 90;
-        marie.state.corruption  = 30;
+        marie.state.mood = 90;
+        marie.state.corruption = 30;
 
         // Refresh all visuals with starting state
         foreach (var doll in allDolls)
             doll.visuals?.UpdateVisuals(doll.state);
     }
 
-    // ── Called at end of each day by GameManager.StartNight() ──────────────────
+    // ── Called at end of each day by GameManager.EndDay() ─────────────────────
 
     public void RunNightForAllDolls()
     {
@@ -61,8 +61,8 @@ public class DollManager : MonoBehaviour
         switch (name.ToLower())
         {
             case "elizabeth": return elizabeth;
-            case "oliver":    return oliver;
-            case "marie":     return marie;
+            case "oliver": return oliver;
+            case "marie": return marie;
             default:
                 Debug.LogWarning($"[DollManager] Unknown doll name: {name}");
                 return null;

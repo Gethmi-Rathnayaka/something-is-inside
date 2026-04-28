@@ -40,6 +40,18 @@ public class OliverLogic : DollBase
         return "Oliver looks cleaner. His tears have dried.";
     }
 
+    public override string BrushHair()
+    {
+
+
+        state.ModifyMood(10);
+        state.ModifyCorruption(-5);
+        ApplyCareBonus();
+        interactedToday = true;
+        visuals?.UpdateVisuals(state);
+        return "Oliver leans into the brush. His crying eases.";
+    }
+
     public override string GiftItem(string item)
     {
         bool correct = System.Array.Exists(correctGifts,
