@@ -133,6 +133,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DollVisuals
   spriteRenderer: {fileID: 5048121695339774430}
+  spriteVariants:
+    defaultSprite: {fileID: 21300000, guid: 32a39250d1a90c74481c1ce2f20b08c7, type: 3}
+    sadSprite: {fileID: 21300000, guid: 293dc1443d3a54e4288265e69ad9529a, type: 3}
+    corruptedSprite: {fileID: 21300000, guid: 62e720ae21b608145a860b8bba07fe1e, type: 3}
+    dirtySprite: {fileID: 21300000, guid: b7abca8865fe8f544bef6f1dcb820f23, type: 3}
+    withBloodSprite: {fileID: 21300000, guid: eb95fa239e594374bb205eee768bed4b, type: 3}
+    longHairSprite: {fileID: 21300000, guid: 224b7fa7e21192e4888e995fd2e36a0a, type: 3}
+    wrappedInRibbonSprite: {fileID: 0}
+    wetSprite: {fileID: 0}
+    distortedFaceSprite: {fileID: 21300000, guid: 26d8b6b39503e3d42899aadc9cf9af04, type: 3}
+  spriteState:
+    hasBlood: 0
+    hasLongHair: 0
+    isWrappedInRibbon: 0
+    isWet: 0
+    hasDistortedFace: 0
 --- !u!114 &4898206125966435513
 MonoBehaviour:
   m_ObjectHideFlags: 0

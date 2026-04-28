@@ -44,6 +44,10 @@ public class GameManager : MonoBehaviour
             return;
         }
 
+        // Track day reached
+        if (SaveManager.Instance != null)
+            SaveManager.Instance.TrackDayReached(day);
+
         interactionsLeft = 3;
         nightmareFlag = false;
 
@@ -107,6 +111,8 @@ public class GameManager : MonoBehaviour
         // Marie ribbon removed
         if (marie.state.ribbonRemovedFlag)
         {
+            if (SaveManager.Instance != null)
+                SaveManager.Instance.TrackEnding("bad_ribbon");
             uiManager.ShowEnding("The ribbon unravels completely. The room goes dark.\n— BAD END —");
             return true;
         }
@@ -114,6 +120,8 @@ public class GameManager : MonoBehaviour
         // Elizabeth blood not cleaned (Day 8+)
         if (elizabeth.state.bloodNotCleanedFlag)
         {
+            if (SaveManager.Instance != null)
+                SaveManager.Instance.TrackEnding("bad_blood");
             uiManager.ShowEnding("Something spreads from Elizabeth's dress.\nYou should have cleaned it.\n— BAD END —");
             return true;
         }
@@ -121,6 +129,8 @@ public class GameManager : MonoBehaviour
         // Oliver 3 days no comfort
         if (oliver.state.oliverBadEndFlag)
         {
+            if (SaveManager.Instance != null)
+                SaveManager.Instance.TrackEnding("bad_oliver");
             uiManager.ShowEnding("Oliver's crying fills the house.\nThere is nothing left to comfort.\n— BAD END —");
             return true;
         }
@@ -132,6 +142,8 @@ public class GameManager : MonoBehaviour
 
         if (highCorruption >= 2)
         {
+            if (SaveManager.Instance != null)
+                SaveManager.Instance.TrackEnding("bad_corruption");
             uiManager.ShowEnding("Something is very wrong.\nThe dolls are no longer just dolls.\n— BAD END —");
             return true;
         }
@@ -158,11 +170,15 @@ public class GameManager : MonoBehaviour
 
         if (goodEnd)
         {
+            if (SaveManager.Instance != null)
+                SaveManager.Instance.TrackEnding("good");
             uiManager.ShowEnding("The dolls smile at you.\nYou are welcome to stay.\n— GOOD END —");
             return;
         }
 
         // Neutral end (fallthrough)
+        if (SaveManager.Instance != null)
+            SaveManager.Instance.TrackEnding("neutral");
         uiManager.ShowEnding("The dolls stare.\nNeither acceptance nor rejection.\n— NEUTRAL END —");
     }
 }

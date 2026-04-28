@@ -15,6 +15,18 @@ using TMPro;
 /// </summary>
 public class UIManager : MonoBehaviour
 {
+    public static UIManager Instance { get; private set; }
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+    }
+
     [Header("Text")]
     public TextMeshProUGUI dialogueText;
     public TextMeshProUGUI dayText;
@@ -41,8 +53,11 @@ public class UIManager : MonoBehaviour
     public GameObject dollInteractionPanel;      // Panel with doll stats + action buttons
     public TextMeshProUGUI dollNameText;          // Doll name display
     public TextMeshProUGUI dollStatsText;         // Doll stats display
+    public Image dollSpriteImage;                 // Display doll's default sprite
     public Button[] dollActionButtons;            // up to 4 buttons (Clean/Brush/Gift/Comfort, etc.)
     public Button closeDollPanelButton;           // Close button
+
+    public GameObject interactionHeaderPanel;
     public TextMeshProUGUI interactionHeaderText; // "Interact with dolls today (x/3)"
 
     [Header("Special Event Panel")]
@@ -122,18 +137,82 @@ public class UIManager : MonoBehaviour
     /// </summary>
     public void StartDollSelection(int interactionsLeft)
     {
-        if (interactionHeaderText != null)
-        {
-            interactionHeaderText.gameObject.SetActive(true);
-            UpdateInteractionHeader(interactionsLeft);
-        }
+        if (interactionHeaderPanel != null)
+            interactionHeaderPanel.SetActive(true);
+
+        UpdateInteractionHeader(interactionsLeft);
 
         HideChoices();
         HideDollPanel();
     }
 
     /// <summary>
-    /// Shows the doll interaction panel with stats and action buttons.
+    /// Shows the doll interaction panel with stats, sprite, and action buttons.
+    /// </summary>
+    public void ShowDollPanel(DollBase doll, (string label, System.Action action)[] actions)
+    {
+        if (dollInteractionPanel != null)
+            dollInteractionPanel.SetActive(true);
+
+        if (dollNameText != null)
+            dollNameText.text = doll.state.dollName;
+
+        if (dollStatsText != null)
+            dollStatsText.text = $"Mood: {doll.state.mood}/100\nCleanliness: {doll.state.cleanliness}/100\nCorruption: {doll.state.corruption}/100";
+
+        // Display the doll's sprite
+        if (dollSpriteImage != null && doll.visuals != null)
+        {
+            var spriteVariants = doll.visuals.GetSpriteVariants();
+            if (spriteVariants != null)
+            {
+                // Use SpriteVariants to get appropriate sprite based on current state
+                Sprite displaySprite = spriteVariants.GetAppropriateSprite(doll.state, doll.visuals.GetSpriteState());
+                if (displaySprite != null)
+                    dollSpriteImage.sprite = displaySprite;
+            }
+        }
+
+        // Populate action buttons
+        for (int i = 0; i < dollActionButtons.Length; i++)
+        {
+            if (dollActionButtons[i] == null) continue;
+
+            if (i < actions.Length)
+            {
+                dollActionButtons[i].gameObject.SetActive(true);
+                var labelText = dollActionButtons[i].GetComponentInChildren<TextMeshProUGUI>();
+                if (labelText != null) labelText.text = actions[i].label;
+
+                dollActionButtons[i].onClick.RemoveAllListeners();
+                var action = actions[i].action;  // capture
+                dollActionButtons[i].onClick.AddListener(() =>
+                {
+                    HideDollPanel();
+                    action?.Invoke();
+                });
+            }
+            else
+            {
+                dollActionButtons[i].gameObject.SetActive(false);
+            }
+        }
+
+        // Setup close button
+        if (closeDollPanelButton != null)
+        {
+            closeDollPanelButton.onClick.RemoveAllListeners();
+            closeDollPanelButton.onClick.AddListener(() =>
+            {
+                HideDollPanel();
+                // Return to doll selection
+                StartDollSelection(GameManager.Instance.interactionsLeft);
+            });
+        }
+    }
+
+    /// <summary>
+    /// Shows the doll interaction panel with stats and action buttons (legacy - for compatibility).
     /// </summary>
     public void ShowDollPanel(string dollName, int mood, int cleanliness, int corruption, (string label, Action action)[] actions)
     {
@@ -201,8 +280,8 @@ public class UIManager : MonoBehaviour
     {
         HideDollPanel();
 
-        if (interactionHeaderText != null)
-            interactionHeaderText.gameObject.SetActive(false);
+        if (interactionHeaderPanel != null)
+            interactionHeaderPanel.SetActive(false);
     }
 
     public void UpdateInteractionHeader(int interactionsLeft)
@@ -366,7 +445,7 @@ public class UIManager : MonoBehaviour
         if (nightOverlay != null) nightOverlay.SetActive(false);
         if (fadePanel != null) fadePanel.SetActive(false);
 
-        yield return new WaitForSeconds(0.3f);
+        yield return new WaitForSeconds(0.8f);  // Extended buffer to prevent scene flash during transition
 
         onComplete?.Invoke();   // → GameManager.StartDay() runs here
     }

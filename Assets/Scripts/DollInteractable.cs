@@ -39,13 +39,8 @@ public class DollInteractable : MonoBehaviour, IPointerClickHandler
 
         var actions = GetDollActions();
 
-        uiManager.ShowDollPanel(
-            dollLogic.state.dollName,
-            dollLogic.state.mood,
-            dollLogic.state.cleanliness,
-            dollLogic.state.corruption,
-            actions
-        );
+        // Use the new overload that accepts DollBase for sprite display
+        uiManager.ShowDollPanel(dollLogic, actions);
     }
 
     /// <summary>
@@ -71,15 +66,12 @@ public class DollInteractable : MonoBehaviour, IPointerClickHandler
         if (dollLogic is OliverLogic)
         {
             uiManager.ShowDollPanel(
-                dollLogic.state.dollName,
-                dollLogic.state.mood,
-                dollLogic.state.cleanliness,
-                dollLogic.state.corruption,
+                dollLogic,
                 new (string label, System.Action action)[]
                 {
-                    ("Gift: Ribbon", () => intManager.GiftOliver("ribbon")),
-                    ("Gift: Clover", () => intManager.GiftOliver("clover")),
-                    ("Gift: Rock", () => intManager.GiftOliver("rock")),
+                    ("Ribbon", () => intManager.GiftOliver("ribbon")),
+                    ("Clover", () => intManager.GiftOliver("clover")),
+                    ("Rock", () => intManager.GiftOliver("rock")),
                     ("Back", () => OnPointerClick(null))
                 }
             );
@@ -87,15 +79,12 @@ public class DollInteractable : MonoBehaviour, IPointerClickHandler
         else if (dollLogic is ElizabethLogic)
         {
             uiManager.ShowDollPanel(
-                dollLogic.state.dollName,
-                dollLogic.state.mood,
-                dollLogic.state.cleanliness,
-                dollLogic.state.corruption,
+                dollLogic,
                 new (string label, System.Action action)[]
                 {
-                    ("Gift: Ribbon", () => intManager.GiftElizabeth("ribbon")),
-                    ("Gift: Clover", () => intManager.GiftElizabeth("clover")),
-                    ("Gift: Rock", () => intManager.GiftElizabeth("rock")),
+                    ("Ribbon", () => intManager.GiftElizabeth("ribbon")),
+                    ("Clover", () => intManager.GiftElizabeth("clover")),
+                    ("Rock", () => intManager.GiftElizabeth("rock")),
                     ("Back", () => OnPointerClick(null))
                 }
             );
@@ -103,15 +92,12 @@ public class DollInteractable : MonoBehaviour, IPointerClickHandler
         else if (dollLogic is MarieLogic)
         {
             uiManager.ShowDollPanel(
-                dollLogic.state.dollName,
-                dollLogic.state.mood,
-                dollLogic.state.cleanliness,
-                dollLogic.state.corruption,
+                dollLogic,
                 new (string label, System.Action action)[]
                 {
-                    ("Gift: Ribbon", () => intManager.GiftMarie("ribbon")),
-                    ("Gift: Clover", () => intManager.GiftMarie("clover")),
-                    ("Gift: Rock", () => intManager.GiftMarie("rock")),
+                    ("Ribbon", () => intManager.GiftMarie("ribbon")),
+                    ("Clover", () => intManager.GiftMarie("clover")),
+                    ("Rock", () => intManager.GiftMarie("rock")),
                     ("Back", () => OnPointerClick(null))
                 }
             );

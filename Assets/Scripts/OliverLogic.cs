@@ -25,6 +25,21 @@ public class OliverLogic : DollBase
         return "Oliver's trembling slows. He clutches the comfort quietly.";
     }
 
+    public override string Clean()
+    {
+        // Remove wet sprite when cleaned
+        if (visuals != null)
+            visuals.SetSpriteFlag("isWet", false);
+
+        state.ModifyCleanliness(30);
+        state.ModifyMood(5);
+        state.ModifyCorruption(-5);
+        ApplyCareBonus();
+        interactedToday = true;
+        visuals?.UpdateVisuals(state);
+        return "Oliver looks cleaner. His tears have dried.";
+    }
+
     public override string GiftItem(string item)
     {
         bool correct = System.Array.Exists(correctGifts,

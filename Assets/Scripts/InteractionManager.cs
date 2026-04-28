@@ -94,6 +94,14 @@ public class InteractionManager : MonoBehaviour
     public void CleanBloodFromElizabeth()
     {
         dollManager.elizabeth.bloodSplashed = false;
+        
+        // Remove blood sprite
+        if (dollManager.elizabeth.visuals != null)
+        {
+            dollManager.elizabeth.visuals.SetSpriteFlag("hasBlood", false);
+            dollManager.elizabeth.visuals.UpdateVisuals(dollManager.elizabeth.state);
+        }
+        
         string feedback = dollManager.elizabeth.Clean();
         FinishInteraction(feedback);
     }

@@ -1,22 +1,10 @@
 fileFormatVersion: 2
-guid: 49cba3ed36887ef4d967de7e94aa6bd0
+guid: e8389b33de16f6b4baa6bfa8b1283191
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 4483504832982471387
-    second: pixil-frame-0 (1)_0
-  - first:
-      213: 8740631507717350645
-    second: pixil-frame-0 (1)_1
-  - first:
-      213: 800809254119561234
-    second: pixil-frame-0 (1)_2
-  - first:
-      213: -8764260469114644064
-    second: pixil-frame-0 (1)_3
-  - first:
-      213: 7649293688979563194
-    second: pixil-frame-0 (1)_4
+      213: 524721373143125461
+    second: Marie-wrap_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -49,7 +37,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -58,9 +46,9 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 2
+  spriteMode: 1
   spriteExtrude: 1
-  spriteMeshType: 1
+  spriteMeshType: 0
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
   spritePixelsToUnits: 100
@@ -87,7 +75,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 1
+    textureCompression: 0
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -125,13 +113,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: pixil-frame-0 (1)_0
+      name: Marie-wrap_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 9359
-        width: 625
-        height: 625
+        x: 91
+        y: 168
+        width: 418
+        height: 582
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -140,96 +128,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: bd2daa614eb983e30800000000000000
-      internalID: 4483504832982471387
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: pixil-frame-0 (1)_1
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 7487
-        width: 2497
-        height: 2186
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 5f46412eb06fc4970800000000000000
-      internalID: 8740631507717350645
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: pixil-frame-0 (1)_2
-      rect:
-        serializedVersion: 2
-        x: 7175
-        y: 7799
-        width: 2809
-        height: 2185
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 21854a416cb0d1b00800000000000000
-      internalID: 800809254119561234
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: pixil-frame-0 (1)_3
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 0
-        width: 9673
-        height: 8737
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 0a95c63d9871f5680800000000000000
-      internalID: -8764260469114644064
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: pixil-frame-0 (1)_4
-      rect:
-        serializedVersion: 2
-        x: 7799
-        y: 0
-        width: 2185
-        height: 1561
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: ab2a34a1510c72a60800000000000000
-      internalID: 7649293688979563194
+      spriteID: 5dd404c0f4f284700800000000000000
+      internalID: 524721373143125461
       vertices: []
       indices: 
       edges: []
@@ -238,7 +138,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 5e97eb03825dee720800000000000000
     internalID: 0
     vertices: []
     indices: 
@@ -248,11 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      pixil-frame-0 (1)_0: 4483504832982471387
-      pixil-frame-0 (1)_1: 8740631507717350645
-      pixil-frame-0 (1)_2: 800809254119561234
-      pixil-frame-0 (1)_3: -8764260469114644064
-      pixil-frame-0 (1)_4: 7649293688979563194
+      Marie-wrap_0: 524721373143125461
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

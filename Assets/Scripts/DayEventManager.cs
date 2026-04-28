@@ -15,6 +15,15 @@ public class DayEventManager : MonoBehaviour
     public InteractionManager interactionManager;
     public DollManager dollManager;
 
+    private BackgroundManager backgroundManager;
+    private ScreenEffectsManager screenEffectsManager;
+
+    private void OnEnable()
+    {
+        backgroundManager = BackgroundManager.Instance;
+        screenEffectsManager = ScreenEffectsManager.Instance;
+    }
+
     // ── Entry point called by GameManager.StartDay() ────────────────────────────
 
     public void ShowDayEvent(int day)
@@ -65,6 +74,18 @@ public class DayEventManager : MonoBehaviour
             "Hmm. Why is Oliver's face wet? Just like tears."
         };
 
+        // If Oliver cried, update his sprite
+        if (oliver.state.mood < 50 && oliver.visuals != null)
+        {
+            oliver.visuals.SetSpriteFlag("isWet", true);
+            oliver.visuals.UpdateVisuals(oliver.state);
+            if (SaveManager.Instance != null)
+            {
+                SaveManager.Instance.TrackEvent("day2_OliverCried");
+                SaveManager.Instance.TrackSpriteUnlocked("oliver_Wet");
+            }
+        }
+
         if (eli.state.mood < 50)
             lines.Add("Elizabeth's expression looks... tighter than yesterday.");
 
@@ -96,7 +117,21 @@ public class DayEventManager : MonoBehaviour
             lines.Add("Oliver is... definitely crying. There are tiny wet streaks on his cheeks.");
 
         if (eli.state.mood < 50)
-            lines.Add("Elizabeth's face looks distorted. Like a smile that's too wide.");
+        {
+            lines.Add("Elizabeth's expression looks... distorted. Like a smile that's too wide.");
+
+            // Update sprite for distorted face
+            if (eli.visuals != null)
+            {
+                eli.visuals.SetSpriteFlag("hasDistortedFace", true);
+                eli.visuals.UpdateVisuals(eli.state);
+                if (SaveManager.Instance != null)
+                {
+                    SaveManager.Instance.TrackEvent("day3_ElizabethDistorted");
+                    SaveManager.Instance.TrackSpriteUnlocked("elizabeth_DistortedFace");
+                }
+            }
+        }
 
         if (lines.Count == 0)
             lines.Add("The morning is quiet. The dolls sit on the shelf.");
@@ -129,6 +164,8 @@ public class DayEventManager : MonoBehaviour
 
     private void Day5()
     {
+        var marie = dollManager.marie;
+
         uiManager.StartDialogue(new string[]
         {
             "Marie's ribbon is dark red today. Wet.",
@@ -137,14 +174,37 @@ public class DayEventManager : MonoBehaviour
         },
         () =>
         {
+            if (SaveManager.Instance != null)
+                SaveManager.Instance.TrackEvent("day5_RibbonEvent");
+
             // Show special event panel for ribbon decision
             uiManager.ShowSpecialEventPanel(
                 "Marie's Ribbon",
                 "The ribbon is wet and looks... wrong.\nShould you remove it?",
                 new (string label, System.Action action)[]
                 {
-                    ("Remove the ribbon",  () => interactionManager.RemoveMariesRibbon()),
-                    ("Leave it alone",     () => interactionManager.LeaveMariesRibbon()),
+                    ("Remove the ribbon",  () => 
+                    {
+                        if (SaveManager.Instance != null)
+                            SaveManager.Instance.TrackEvent("day5_RibbonRemoved");
+                        interactionManager.RemoveMariesRibbon();
+                    }),
+                    ("Leave it alone",     () => 
+                    {
+                        // If corruption is very high, ribbon wraps around her
+                        if (marie.state.corruption > 70 && marie.visuals != null)
+                        {
+                            marie.visuals.SetSpriteFlag("isWrappedInRibbon", true);
+                            marie.visuals.UpdateVisuals(marie.state);
+                            if (SaveManager.Instance != null)
+                            {
+                                SaveManager.Instance.TrackEvent("day5_RibbonWrapped");
+                                SaveManager.Instance.TrackSpriteUnlocked("marie_WrappedInRibbon");
+                            }
+                            uiManager.ShowMessage("The ribbon coils tighter around Marie...");
+                        }
+                        interactionManager.LeaveMariesRibbon();
+                    }),
                     ("Not today",          () => interactionManager.NotToday())
                 }
             );
@@ -196,6 +256,8 @@ public class DayEventManager : MonoBehaviour
                         ("Interact with them",  () => ShowStandardChoices())
                     }
                 );
+                if (SaveManager.Instance != null)
+                    SaveManager.Instance.TrackEvent("day6_DollsMoved");
             });
         }
         else
@@ -224,6 +286,17 @@ public class DayEventManager : MonoBehaviour
             lines.Add("Elizabeth's hair is longer.");
             lines.Add("That's impossible. But it is.");
             lines.Add("It trails over the shelf edge now.");
+
+            // Update sprite to show longer hair
+            if (eli.visuals != null)
+            {
+                eli.visuals.SetSpriteFlag("hasLongHair", true);
+                eli.visuals.UpdateVisuals(eli.state);
+                if (SaveManager.Instance != null)
+                {
+                    SaveManager.Instance.TrackSpriteUnlocked("elizabeth_LongHair");
+                }
+            }
         }
         else
         {
@@ -243,6 +316,15 @@ public class DayEventManager : MonoBehaviour
     {
         // Trigger blood event
         dollManager.elizabeth.bloodSplashed = true;
+        
+        // Update Elizabeth's sprite to show blood
+        if (dollManager.elizabeth.visuals != null)
+        {
+            dollManager.elizabeth.visuals.SetSpriteFlag("hasBlood", true);
+            dollManager.elizabeth.visuals.UpdateVisuals(dollManager.elizabeth.state);
+            if (SaveManager.Instance != null)
+                SaveManager.Instance.TrackEvent("day8_BloodSplash");
+        }
 
         uiManager.StartDialogue(new string[]
         {
@@ -252,13 +334,24 @@ public class DayEventManager : MonoBehaviour
         },
         () =>
         {
+            // Play blood splash screen effect
+            if (screenEffectsManager != null)
+            {
+                screenEffectsManager.PlayBloodSplashEffect(2f);
+            }
+
             uiManager.ShowSpecialEventPanel(
                 "Blood on Elizabeth",
                 "Your blood dripped onto Elizabeth's dress.\nIt's spreading...",
                 new (string label, System.Action action)[]
                 {
                     ("Clean Elizabeth immediately", () => interactionManager.CleanBloodFromElizabeth()),
-                    ("It's fine, ignore it",        () => interactionManager.IgnoreBloodOnElizabeth()),
+                    ("It's fine, ignore it",        () => 
+                    {
+                        if (SaveManager.Instance != null)
+                            SaveManager.Instance.TrackEvent("day8_BloodIgnored");
+                        interactionManager.IgnoreBloodOnElizabeth();
+                    }),
                     ("Interact with others",        () => ShowStandardChoices())
                 }
             );
@@ -284,6 +377,8 @@ public class DayEventManager : MonoBehaviour
         {
             lines.Add("They're all staring at me.");
             lines.Add("I can feel it even when my back is turned.");
+            if (SaveManager.Instance != null)
+                SaveManager.Instance.TrackEvent("day9_CorruptionIntensified");
         }
 
         uiManager.StartDialogue(lines.ToArray(), () =>
@@ -317,5 +412,51 @@ public class DayEventManager : MonoBehaviour
     private void ShowStandardChoices()
     {
         uiManager.StartDollSelection(GameManager.Instance.interactionsLeft);
+    }
+
+    // ── Helper Methods for Sprite/Effect Management ─────────────────────────────
+
+    /// <summary>
+    /// Update background based on overall game state (corruption levels, day, etc).
+    /// Call this from GameManager at the start of each day.
+    /// </summary>
+    public void UpdateEnvironmentForDay(int day)
+    {
+        if (backgroundManager == null)
+            return;
+
+        // Day 10: final day atmosphere
+        if (day == 10)
+        {
+            backgroundManager.SetFinalDayBackground();
+            return;
+        }
+
+        // Check overall corruption to decide environment
+        backgroundManager.UpdateBackgroundBasedOnCorruption(dollManager);
+    }
+
+    /// <summary>
+    /// Helper: trigger a creepy vignette effect for bad events.
+    /// </summary>
+    public void PlayCreepyEffect()
+    {
+        if (screenEffectsManager != null)
+        {
+            screenEffectsManager.PlayVignetteEffect(0.3f, 1.5f);
+        }
+    }
+
+    /// <summary>
+    /// Helper: clear all special sprite states (for resets or specific transitions).
+    /// </summary>
+    public void ClearAllDollSpriteStates()
+    {
+        if (dollManager.elizabeth.visuals != null)
+            dollManager.elizabeth.visuals.GetSpriteState().ClearAllStates();
+        if (dollManager.oliver.visuals != null)
+            dollManager.oliver.visuals.GetSpriteState().ClearAllStates();
+        if (dollManager.marie.visuals != null)
+            dollManager.marie.visuals.GetSpriteState().ClearAllStates();
     }
 }

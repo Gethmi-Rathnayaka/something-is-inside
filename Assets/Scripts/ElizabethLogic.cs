@@ -19,6 +19,10 @@ public class ElizabethLogic : DollBase
         daysNotCleaned = 0;
         state.bloodNotCleanedFlag = false;  // cleaning removes blood-flag danger
 
+        // Remove distorted face sprite when cared for
+        if (visuals != null)
+            visuals.SetSpriteFlag("hasDistortedFace", false);
+
         state.ModifyCleanliness(30);
         state.ModifyMood(5);
         state.ModifyCorruption(-5);
@@ -30,6 +34,10 @@ public class ElizabethLogic : DollBase
 
     public override string BrushHair()
     {
+        // Remove distorted face sprite when cared for
+        if (visuals != null)
+            visuals.SetSpriteFlag("hasDistortedFace", false);
+
         // Brush: +20 mood, -10 corruption (plus base -5 care bonus)
         state.ModifyMood(20);
         state.ModifyCorruption(-10);
@@ -62,6 +70,8 @@ public class ElizabethLogic : DollBase
         {
             // Tell GameManager to trigger nightmare UI next day
             GameManager.Instance.SetNightmareFlag(true);
+            if (SaveManager.Instance != null)
+                SaveManager.Instance.TrackEvent("elizabethNightmare");
             Debug.Log("[Elizabeth] Nightmare flag SET — 2 days uncleaned.");
         }
 
