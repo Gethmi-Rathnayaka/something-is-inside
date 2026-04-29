@@ -68,6 +68,25 @@ public class AudioManager : MonoBehaviour
 
     public void PlaySFX(AudioClip clip)
     {
-        sfxSource.PlayOneShot(clip);
+        if (clip != null && sfxSource != null)
+        {
+            sfxSource.PlayOneShot(clip);
+        }
+    }
+
+    public void PlayEndingSFX(EndingType endingType)
+    {
+        switch (endingType)
+        {
+            case EndingType.Good:
+                PlaySFX(GoodEnd);
+                break;
+            case EndingType.Bad:
+                PlaySFX(BadEnd);
+                break;
+            case EndingType.Neutral:
+                PlaySFX(NeutralEnd);
+                break;
+        }
     }
 }

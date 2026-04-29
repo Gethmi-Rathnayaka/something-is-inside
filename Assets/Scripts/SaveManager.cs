@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 /// <summary>
@@ -52,6 +53,7 @@ public class DollStateSnapshot
 public class SaveManager : MonoBehaviour
 {
     public static SaveManager Instance;
+    public static event Action<string> OnAchievementUnlocked;
 
     public AchievementData data = new AchievementData();
     public GameState gameState = new GameState();
@@ -133,24 +135,27 @@ public class SaveManager : MonoBehaviour
     /// </summary>
     public void TrackDayReached(int day)
     {
+        bool unlocked = false;
+
         if (day > data.maxDayReached)
             data.maxDayReached = day;
 
         switch (day)
         {
-            case 1: data.reachedDay1 = true; break;
-            case 2: data.reachedDay2 = true; break;
-            case 3: data.reachedDay3 = true; break;
-            case 4: data.reachedDay4 = true; break;
-            case 5: data.reachedDay5 = true; break;
-            case 6: data.reachedDay6 = true; break;
-            case 7: data.reachedDay7 = true; break;
-            case 8: data.reachedDay8 = true; break;
-            case 9: data.reachedDay9 = true; break;
-            case 10: data.reachedDay10 = true; break;
+            case 1: unlocked = UnlockFlag(data.reachedDay1, value => data.reachedDay1 = value); if (unlocked) NotifyAchievementUnlocked("Day 1 Reached"); break;
+            case 2: unlocked = UnlockFlag(data.reachedDay2, value => data.reachedDay2 = value); if (unlocked) NotifyAchievementUnlocked("Day 2 Reached"); break;
+            case 3: unlocked = UnlockFlag(data.reachedDay3, value => data.reachedDay3 = value); if (unlocked) NotifyAchievementUnlocked("Day 3 Reached"); break;
+            case 4: unlocked = UnlockFlag(data.reachedDay4, value => data.reachedDay4 = value); if (unlocked) NotifyAchievementUnlocked("Day 4 Reached"); break;
+            case 5: unlocked = UnlockFlag(data.reachedDay5, value => data.reachedDay5 = value); if (unlocked) NotifyAchievementUnlocked("Day 5 Reached"); break;
+            case 6: unlocked = UnlockFlag(data.reachedDay6, value => data.reachedDay6 = value); if (unlocked) NotifyAchievementUnlocked("Day 6 Reached"); break;
+            case 7: unlocked = UnlockFlag(data.reachedDay7, value => data.reachedDay7 = value); if (unlocked) NotifyAchievementUnlocked("Day 7 Reached"); break;
+            case 8: unlocked = UnlockFlag(data.reachedDay8, value => data.reachedDay8 = value); if (unlocked) NotifyAchievementUnlocked("Day 8 Reached"); break;
+            case 9: unlocked = UnlockFlag(data.reachedDay9, value => data.reachedDay9 = value); if (unlocked) NotifyAchievementUnlocked("Day 9 Reached"); break;
+            case 10: unlocked = UnlockFlag(data.reachedDay10, value => data.reachedDay10 = value); if (unlocked) NotifyAchievementUnlocked("Day 10 Reached"); break;
         }
 
-        Save();
+        if (unlocked)
+            Save();
     }
 
     /// <summary>
@@ -158,43 +163,56 @@ public class SaveManager : MonoBehaviour
     /// </summary>
     public void TrackEvent(string eventName)
     {
+        bool unlocked = false;
+
         switch (eventName)
         {
             case "day2_OliverCried":
-                data.day2_OliverCried = true;
+                unlocked = UnlockFlag(data.day2_OliverCried, value => data.day2_OliverCried = value);
+                if (unlocked) NotifyAchievementUnlocked("Sorrow");
                 break;
             case "day3_ElizabethDistorted":
-                data.day3_ElizabethDistorted = true;
+                unlocked = UnlockFlag(data.day3_ElizabethDistorted, value => data.day3_ElizabethDistorted = value);
+                if (unlocked) NotifyAchievementUnlocked("Distorted");
                 break;
             case "day5_RibbonEvent":
-                data.day5_RibbonEvent = true;
+                unlocked = UnlockFlag(data.day5_RibbonEvent, value => data.day5_RibbonEvent = value);
+                if (unlocked) NotifyAchievementUnlocked("Discovery");
                 break;
             case "day5_RibbonRemoved":
-                data.day5_RibbonRemoved = true;
+                unlocked = UnlockFlag(data.day5_RibbonRemoved, value => data.day5_RibbonRemoved = value);
                 data.ribbonRemoved = true;
+                if (unlocked) NotifyAchievementUnlocked("Ribbon Removed");
                 break;
             case "day5_RibbonWrapped":
-                data.day5_RibbonWrapped = true;
+                unlocked = UnlockFlag(data.day5_RibbonWrapped, value => data.day5_RibbonWrapped = value);
+                if (unlocked) NotifyAchievementUnlocked("Corruption Spreads");
                 break;
             case "day6_DollsCorrupted":
-                data.day6_DollsMoved = true;
+                unlocked = UnlockFlag(data.day6_DollsMoved, value => data.day6_DollsMoved = value);
+                if (unlocked) NotifyAchievementUnlocked("Unnatural");
                 break;
             case "day8_BloodSplash":
-                data.day8_BloodSplash = true;
+                unlocked = UnlockFlag(data.day8_BloodSplash, value => data.day8_BloodSplash = value);
+                if (unlocked) NotifyAchievementUnlocked("Accident");
                 break;
             case "day8_BloodIgnored":
-                data.day8_BloodIgnored = true;
+                unlocked = UnlockFlag(data.day8_BloodIgnored, value => data.day8_BloodIgnored = value);
                 data.ignoredBlood = true;
+                if (unlocked) NotifyAchievementUnlocked("Neglect");
                 break;
             case "day9_CorruptionIntensified":
-                data.day9_CorruptionIntensified = true;
+                unlocked = UnlockFlag(data.day9_CorruptionIntensified, value => data.day9_CorruptionIntensified = value);
+                if (unlocked) NotifyAchievementUnlocked("Chaos");
                 break;
             case "elizabethNightmare":
-                data.elizabethNightmare = true;
+                unlocked = UnlockFlag(data.elizabethNightmare, value => data.elizabethNightmare = value);
+                if (unlocked) NotifyAchievementUnlocked("Nightmare");
                 break;
         }
 
-        Save();
+        if (unlocked)
+            Save();
     }
 
     /// <summary>
@@ -202,23 +220,30 @@ public class SaveManager : MonoBehaviour
     /// </summary>
     public void TrackSpriteUnlocked(string spriteName)
     {
+        bool unlocked = false;
+
         switch (spriteName)
         {
             case "elizabeth_LongHair":
-                data.elizabeth_LongHairUnlocked = true;
+                unlocked = UnlockFlag(data.elizabeth_LongHairUnlocked, value => data.elizabeth_LongHairUnlocked = value);
+                if (unlocked) NotifyAchievementUnlocked("Long Hair");
                 break;
             case "elizabeth_DistortedFace":
-                data.elizabeth_DistortedFaceUnlocked = true;
+                unlocked = UnlockFlag(data.elizabeth_DistortedFaceUnlocked, value => data.elizabeth_DistortedFaceUnlocked = value);
+                if (unlocked) NotifyAchievementUnlocked("Distorted");
                 break;
             case "oliver_Wet":
-                data.oliver_WetSpriteUnlocked = true;
+                unlocked = UnlockFlag(data.oliver_WetSpriteUnlocked, value => data.oliver_WetSpriteUnlocked = value);
+                if (unlocked) NotifyAchievementUnlocked("Sorrow");
                 break;
             case "marie_WrappedInRibbon":
-                data.marie_RibbonWrappedUnlocked = true;
+                unlocked = UnlockFlag(data.marie_RibbonWrappedUnlocked, value => data.marie_RibbonWrappedUnlocked = value);
+                if (unlocked) NotifyAchievementUnlocked("Corruption Spreads");
                 break;
         }
 
-        Save();
+        if (unlocked)
+            Save();
     }
 
     /// <summary>
@@ -237,28 +262,51 @@ public class SaveManager : MonoBehaviour
     /// </summary>
     public void TrackEnding(string endingType)
     {
+        bool unlocked = false;
+
         switch (endingType)
         {
             case "good":
-                data.gotGoodEnding = true;
+                unlocked = UnlockFlag(data.gotGoodEnding, value => data.gotGoodEnding = value);
+                if (unlocked) NotifyAchievementUnlocked("Good Ending");
                 break;
             case "neutral":
-                data.gotNeutralEnding = true;
+                unlocked = UnlockFlag(data.gotNeutralEnding, value => data.gotNeutralEnding = value);
+                if (unlocked) NotifyAchievementUnlocked("Neutral Ending");
                 break;
             case "bad_ribbon":
-                data.gotBadEnding_RibbonRemoved = true;
+                unlocked = UnlockFlag(data.gotBadEnding_RibbonRemoved, value => data.gotBadEnding_RibbonRemoved = value);
+                if (unlocked) NotifyAchievementUnlocked("Ribbon Removed");
                 break;
             case "bad_blood":
-                data.gotBadEnding_BloodNotCleaned = true;
+                unlocked = UnlockFlag(data.gotBadEnding_BloodNotCleaned, value => data.gotBadEnding_BloodNotCleaned = value);
+                if (unlocked) NotifyAchievementUnlocked("Blood Neglect");
                 break;
             case "bad_oliver":
-                data.gotBadEnding_OliverNoComfort = true;
+                unlocked = UnlockFlag(data.gotBadEnding_OliverNoComfort, value => data.gotBadEnding_OliverNoComfort = value);
+                if (unlocked) NotifyAchievementUnlocked("Neglected");
                 break;
             case "bad_corruption":
-                data.gotBadEnding_HighCorruption = true;
+                unlocked = UnlockFlag(data.gotBadEnding_HighCorruption, value => data.gotBadEnding_HighCorruption = value);
+                if (unlocked) NotifyAchievementUnlocked("Corrupted");
                 break;
         }
 
-        Save();
+        if (unlocked)
+            Save();
+    }
+
+    private bool UnlockFlag(bool currentValue, Action<bool> setter)
+    {
+        if (currentValue)
+            return false;
+
+        setter(true);
+        return true;
+    }
+
+    private void NotifyAchievementUnlocked(string title)
+    {
+        OnAchievementUnlocked?.Invoke(title);
     }
 }

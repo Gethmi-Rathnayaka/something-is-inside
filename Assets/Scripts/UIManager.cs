@@ -56,6 +56,10 @@ public class UIManager : MonoBehaviour
     public Sprite badEndingImage;      // Image shown for BAD END
     public Sprite neutralEndingImage;  // Image shown for NEUTRAL END
 
+    [Header("Achievement Unlock Notification")]
+    public GameObject achievementUnlockedPanel;
+    public TextMeshProUGUI achievementUnlockedText;
+
     [Header("Dialogue Sequence")]
     public GameObject dialoguePanel;
     public Button nextButton;
@@ -84,6 +88,46 @@ public class UIManager : MonoBehaviour
     private string[] currentLines;
     private int currentLineIndex;
     private Action onDialogueComplete;
+    private Coroutine achievementUnlockedRoutine;
+
+    private void OnEnable()
+    {
+        SaveManager.OnAchievementUnlocked += HandleAchievementUnlocked;
+    }
+
+    private void OnDisable()
+    {
+        SaveManager.OnAchievementUnlocked -= HandleAchievementUnlocked;
+    }
+
+    private void HandleAchievementUnlocked(string title)
+    {
+        if (AudioManager.Instance != null && AudioManager.Instance.unlocked != null)
+        {
+            AudioManager.Instance.PlaySFX(AudioManager.Instance.unlocked);
+        }
+
+        if (achievementUnlockedPanel == null || achievementUnlockedText == null)
+            return;
+
+        achievementUnlockedText.text = $"Achievement unlocked: {title}";
+        achievementUnlockedPanel.SetActive(true);
+
+        if (achievementUnlockedRoutine != null)
+            StopCoroutine(achievementUnlockedRoutine);
+
+        achievementUnlockedRoutine = StartCoroutine(HideAchievementUnlockedAfterDelay());
+    }
+
+    private System.Collections.IEnumerator HideAchievementUnlockedAfterDelay()
+    {
+        yield return new WaitForSecondsRealtime(6f);
+
+        if (achievementUnlockedPanel != null)
+            achievementUnlockedPanel.SetActive(false);
+
+        achievementUnlockedRoutine = null;
+    }
 
     // ── Dialogue Sequence ──────────────────────────────────────────────────────────
 
@@ -493,6 +537,11 @@ public class UIManager : MonoBehaviour
     /// <summary>ShowEnding with explicit ending type — displays the appropriate image.</summary>
     public void ShowEnding(string message, EndingType endingType)
     {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayEndingSFX(endingType);
+        }
+
         ShowEnding(message);
 
         // Set ending image based on type
