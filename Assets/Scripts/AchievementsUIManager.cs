@@ -15,6 +15,14 @@ public class AchievementsUIManager : MonoBehaviour
     public Button confirmResetButton;     
     public Button cancelResetButton;      
 
+    private void PlayClickSfx()
+    {
+        if (AudioManager.Instance != null && AudioManager.Instance.click != null)
+        {
+            AudioManager.Instance.PlaySFX(AudioManager.Instance.click);
+        }
+    }
+
     void Start()
     {
         if (SaveManager.Instance == null)
@@ -86,12 +94,16 @@ public class AchievementsUIManager : MonoBehaviour
 
     public void ClearAchievementsConfirm()
     {
+        PlayClickSfx();
+
         if (confirmationPanel != null)
             confirmationPanel.SetActive(true);
     }
 
     public void ConfirmClearAchievements()
     {
+        PlayClickSfx();
+
         if (SaveManager.Instance != null)
         {
             SaveManager.Instance.ResetAllAchievements();
@@ -104,12 +116,16 @@ public class AchievementsUIManager : MonoBehaviour
 
     public void CancelClearAchievements()
     {
+        PlayClickSfx();
+
         if (confirmationPanel != null)
             confirmationPanel.SetActive(false);
     }
     
     public void GoToBootScene()
     {
+        PlayClickSfx();
+
         SceneManager.LoadScene("Boot");
     }
 }

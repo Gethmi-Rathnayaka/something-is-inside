@@ -17,6 +17,14 @@ public class UIManager : MonoBehaviour
 {
     public static UIManager Instance { get; private set; }
 
+    private void PlayClickSfx()
+    {
+        if (AudioManager.Instance != null && AudioManager.Instance.click != null)
+        {
+            AudioManager.Instance.PlaySFX(AudioManager.Instance.click);
+        }
+    }
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -98,7 +106,11 @@ public class UIManager : MonoBehaviour
         {
             nextButton.gameObject.SetActive(true);
             nextButton.onClick.RemoveAllListeners();
-            nextButton.onClick.AddListener(NextLine);
+            nextButton.onClick.AddListener(() =>
+            {
+                PlayClickSfx();
+                NextLine();
+            });
         }
 
         ShowCurrentLine();
@@ -206,6 +218,7 @@ public class UIManager : MonoBehaviour
                 var action = actions[i].action;  // capture
                 dollActionButtons[i].onClick.AddListener(() =>
                 {
+                    PlayClickSfx();
                     HideDollPanel();
                     action?.Invoke();
                 });
@@ -222,6 +235,7 @@ public class UIManager : MonoBehaviour
             closeDollPanelButton.onClick.RemoveAllListeners();
             closeDollPanelButton.onClick.AddListener(() =>
             {
+                PlayClickSfx();
                 HideDollPanel();
                 // Return to doll selection
                 StartDollSelection(GameManager.Instance.interactionsLeft);
@@ -258,6 +272,7 @@ public class UIManager : MonoBehaviour
                 var action = actions[i].action;  // capture
                 dollActionButtons[i].onClick.AddListener(() =>
                 {
+                    PlayClickSfx();
                     HideDollPanel();
                     action?.Invoke();
                 });
@@ -274,6 +289,7 @@ public class UIManager : MonoBehaviour
             closeDollPanelButton.onClick.RemoveAllListeners();
             closeDollPanelButton.onClick.AddListener(() =>
             {
+                PlayClickSfx();
                 HideDollPanel();
                 // Return to doll selection
                 StartDollSelection(GameManager.Instance.interactionsLeft);
@@ -348,6 +364,7 @@ public class UIManager : MonoBehaviour
                 var action = choices[i].action;  // capture
                 specialEventButtons[i].onClick.AddListener(() =>
                 {
+                    PlayClickSfx();
                     HideSpecialEventPanel();
                     action?.Invoke();
                 });
@@ -362,7 +379,11 @@ public class UIManager : MonoBehaviour
         if (closeSpecialEventButton != null)
         {
             closeSpecialEventButton.onClick.RemoveAllListeners();
-            closeSpecialEventButton.onClick.AddListener(HideSpecialEventPanel);
+            closeSpecialEventButton.onClick.AddListener(() =>
+            {
+                PlayClickSfx();
+                HideSpecialEventPanel();
+            });
         }
 
     }
@@ -436,7 +457,11 @@ public class UIManager : MonoBehaviour
                 // Clear old listeners and set new one
                 choiceButtons[i].onClick.RemoveAllListeners();
                 var action = choices[i].action;            // capture for lambda
-                choiceButtons[i].onClick.AddListener(() => action());
+                choiceButtons[i].onClick.AddListener(() =>
+                {
+                    PlayClickSfx();
+                    action();
+                });
             }
             else
             {
@@ -500,6 +525,8 @@ public class UIManager : MonoBehaviour
     /// </summary>
     public void ReturnToMenu()
     {
+        PlayClickSfx();
+
         // Save game state before returning to menu
         if (GameManager.Instance != null && SaveManager.Instance != null)
         {

@@ -5,6 +5,14 @@ public class MenuManager : MonoBehaviour
 {
     public static MenuManager Instance { get; private set; }
 
+    private void PlayClickSfx()
+    {
+        if (AudioManager.Instance != null && AudioManager.Instance.click != null)
+        {
+            AudioManager.Instance.PlaySFX(AudioManager.Instance.click);
+        }
+    }
+
     [Header("UI References")]
     public GameObject quitConfirmationPanel;  // Assign the quit confirmation popup in Inspector
     public GameObject creditsPanel;           // Assign the credits popup in Inspector (optional)
@@ -25,6 +33,8 @@ public class MenuManager : MonoBehaviour
     /// </summary>
     public void StartNewGame()
     {
+        PlayClickSfx();
+
         if (SaveManager.Instance != null)
             SaveManager.Instance.ClearGameState();
 
@@ -36,6 +46,8 @@ public class MenuManager : MonoBehaviour
     /// </summary>
     public void ContinueGame()
     {
+        PlayClickSfx();
+
         SceneManager.LoadScene("game");
     }
 
@@ -44,6 +56,8 @@ public class MenuManager : MonoBehaviour
     /// </summary>
     public void GoToGame()
     {
+        PlayClickSfx();
+
         StartNewGame();
     }
 
@@ -52,6 +66,8 @@ public class MenuManager : MonoBehaviour
     /// </summary>
     public void GoToSave()
     {
+        PlayClickSfx();
+
         SceneManager.LoadScene("save");
     }
 
@@ -60,6 +76,8 @@ public class MenuManager : MonoBehaviour
     /// </summary>
     public void ShowQuitConfirmation()
     {
+        PlayClickSfx();
+
         if (quitConfirmationPanel != null)
         {
             quitConfirmationPanel.SetActive(true);
@@ -71,6 +89,8 @@ public class MenuManager : MonoBehaviour
     /// </summary>
     public void HideQuitConfirmation()
     {
+        PlayClickSfx();
+
         if (quitConfirmationPanel != null)
         {
             quitConfirmationPanel.SetActive(false);
@@ -82,6 +102,8 @@ public class MenuManager : MonoBehaviour
     /// </summary>
     public void QuitGame()
     {
+        PlayClickSfx();
+
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
 #else
@@ -94,6 +116,8 @@ public class MenuManager : MonoBehaviour
     /// </summary>
     public void ShowCredits()
     {
+        PlayClickSfx();
+
         if (creditsPanel != null)
         {
             creditsPanel.SetActive(true);
@@ -105,6 +129,8 @@ public class MenuManager : MonoBehaviour
     /// </summary>
     public void HideCredits()
     {
+        PlayClickSfx();
+
         if (creditsPanel != null)
         {
             creditsPanel.SetActive(false);

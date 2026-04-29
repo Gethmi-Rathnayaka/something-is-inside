@@ -9,6 +9,14 @@ public class AchievementPopupUI : MonoBehaviour
     public TextMeshProUGUI titleText;
     public TextMeshProUGUI descText;
 
+    private void PlayClickSfx()
+    {
+        if (AudioManager.Instance != null && AudioManager.Instance.click != null)
+        {
+            AudioManager.Instance.PlaySFX(AudioManager.Instance.click);
+        }
+    }
+
     public void Show(string title, string desc, Sprite icon, bool unlocked)
     {
         panel.SetActive(true);
@@ -20,6 +28,7 @@ public class AchievementPopupUI : MonoBehaviour
 
     public void Close()
     {
+        PlayClickSfx();
         panel.SetActive(false);
     }
 }
