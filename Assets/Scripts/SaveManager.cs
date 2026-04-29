@@ -176,7 +176,7 @@ public class SaveManager : MonoBehaviour
             case "day5_RibbonWrapped":
                 data.day5_RibbonWrapped = true;
                 break;
-            case "day6_DollsMoved":
+            case "day6_DollsCorrupted":
                 data.day6_DollsMoved = true;
                 break;
             case "day8_BloodSplash":
@@ -221,6 +221,17 @@ public class SaveManager : MonoBehaviour
         Save();
     }
 
+    /// <summary>
+    /// Reset all achievements (for debugging).
+    /// </summary>
+    public void ResetAllAchievements()
+    {
+        data = new AchievementData();
+        PlayerPrefs.DeleteKey("SAVE_DATA");
+        PlayerPrefs.Save();
+        Debug.Log("All achievements cleared.");
+    }
+    
     /// <summary>
     /// Track ending reached.
     /// </summary>
