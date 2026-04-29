@@ -29,7 +29,6 @@ public class UIManager : MonoBehaviour
 
     [Header("Text")]
     public TextMeshProUGUI dialogueText;
-    public TextMeshProUGUI dayText;
     public TextMeshProUGUI currentDayText;
     public GameObject dayCounterPanel;          // Parent GameObject for day counter (hide during dialogue)
 
@@ -391,9 +390,6 @@ public class UIManager : MonoBehaviour
     public void UpdateDay(int day)
     {
         string formattedDay = $"Day {day:00}";
-
-        if (dayText != null)
-            dayText.text = formattedDay;
 
         if (currentDayText != null)
             currentDayText.text = formattedDay;
